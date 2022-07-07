@@ -1,0 +1,6 @@
+{
+  "parent": "bouncing_balls_api:item/bouncingball",
+  "textures": {
+    "layer0": "bouncing_balls_test:item/red"
+  }
+}
