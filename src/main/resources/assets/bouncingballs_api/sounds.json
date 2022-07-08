@@ -2,7 +2,7 @@
     "bounce": {
     "category": "neutral",
     "sounds": [ {
-        "name": "bouncing_balls_api:bounce",
+        "name": "bouncingballs_api:bounce",
         "stream": false
         } ]   
     }

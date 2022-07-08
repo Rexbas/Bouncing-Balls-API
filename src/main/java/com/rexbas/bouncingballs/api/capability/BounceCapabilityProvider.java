@@ -1,4 +1,4 @@
-package bouncing_balls_api.capability;
+package com.rexbas.bouncingballs.api.capability;
 
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;

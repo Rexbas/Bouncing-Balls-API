@@ -1,6 +1,7 @@
-package bouncing_balls_test;
+package com.rexbas.bouncingballs.test;
 
-import bouncing_balls_test.init.BouncingBallsTestItems;
+import com.rexbas.bouncingballs.test.init.BouncingBallsTestItems;
+
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.Mod;
@@ -8,7 +9,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod(BouncingBallsTest.MODID)
 public class BouncingBallsTest {
-	public static final String MODID = "bouncing_balls_test";
+	public static final String MODID = "bouncingballs_test";
 	
 	public static final ItemGroup ITEMGROUP = new ItemGroup(MODID) {
 		@Override

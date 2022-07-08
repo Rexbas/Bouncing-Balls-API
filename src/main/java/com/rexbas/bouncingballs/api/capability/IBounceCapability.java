@@ -1,4 +1,4 @@
-package bouncing_balls_api.capability;
+package com.rexbas.bouncingballs.api.capability;
 
 public interface IBounceCapability {
 	public void addBounce();

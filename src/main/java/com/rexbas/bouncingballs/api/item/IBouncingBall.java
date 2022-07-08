@@ -1,4 +1,4 @@
-package bouncing_balls_api.item;
+package com.rexbas.bouncingballs.api.item;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;

@@ -1,8 +1,9 @@
-package bouncing_balls_test.init;
+package com.rexbas.bouncingballs.test.init;
 
-import bouncing_balls_api.item.BouncingBall;
-import bouncing_balls_api.item.MultiBouncingBall;
-import bouncing_balls_test.BouncingBallsTest;
+import com.rexbas.bouncingballs.api.item.BouncingBall;
+import com.rexbas.bouncingballs.api.item.MultiBouncingBall;
+import com.rexbas.bouncingballs.test.BouncingBallsTest;
+
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraftforge.fml.RegistryObject;

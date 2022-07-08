@@ -1,8 +1,9 @@
-package bouncing_balls_api.item;
+package com.rexbas.bouncingballs.api.item;
 
-import bouncing_balls_api.BouncingBallsAPI.BouncingBallsSounds;
-import bouncing_balls_api.capability.BounceCapabilityProvider;
-import bouncing_balls_api.capability.IBounceCapability;
+import com.rexbas.bouncingballs.BouncingBallsAPI.BouncingBallsSounds;
+import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
+import com.rexbas.bouncingballs.api.capability.IBounceCapability;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;

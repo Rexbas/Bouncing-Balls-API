@@ -4,7 +4,7 @@ license="GNU Lesser General Public License v3.0"
 issueTrackerURL="https://github.com/Rexbas/Bouncing-Balls-API/issues"
 logoFile="logo.png"
 [[mods]]
-modId="bouncing_balls_test"
+modId="bouncingballs_test"
 version="${file.jarVersion}"
 displayName="Bouncing Balls Test"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/bouncing-balls"

@@ -1,9 +1,10 @@
-package bouncing_balls_api;
+package com.rexbas.bouncingballs;
 
-import bouncing_balls_api.capability.BounceCapability;
-import bouncing_balls_api.capability.BounceCapabilityProvider;
-import bouncing_balls_api.capability.IBounceCapability;
-import bouncing_balls_api.item.IBouncingBall;
+import com.rexbas.bouncingballs.api.capability.BounceCapability;
+import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
+import com.rexbas.bouncingballs.api.capability.IBounceCapability;
+import com.rexbas.bouncingballs.api.item.IBouncingBall;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.INBT;
@@ -28,7 +29,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 @Mod(BouncingBallsAPI.MODID)
 public class BouncingBallsAPI {
-	public static final String MODID = "bouncing_balls_api";
+	public static final String MODID = "bouncingballs_api";
 	
 	public BouncingBallsAPI() {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
