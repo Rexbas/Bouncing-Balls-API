@@ -14,8 +14,8 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 version = "${mod_version}"
-group = 'com.rexbas.bouncing_balls_api' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "BouncingBallsAPI-${mc_version}"
+group = 'com.rexbas' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "bouncingballs-api-${mc_version}"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
@@ -56,10 +56,10 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                bouncing_balls_api {
+                bouncingballs_api {
                     source sourceSets.main
                 }
-                bouncing_balls_test {
+                bouncingballs_test {
                     source sourceSets.test
                 }
             }
@@ -81,7 +81,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                bouncing_balls_api {
+                bouncingballs_api {
                     source sourceSets.main
                 }
             }
@@ -103,10 +103,10 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
-            args '--mod', 'bouncing_balls_api', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            args '--mod', 'bouncingballs_api', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
-                bouncing_balls_api {
+                bouncingballs_api {
                     source sourceSets.main
                 }
             }
@@ -128,6 +128,19 @@ dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 }
 
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+processResources {
+    exclude '.cache'
+
+    // Minify the json files.
+    doLast {
+        fileTree(dir: outputs.files.asPath, include: '**/*.json').each {
+            File file -> file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
+        }
+    }
+}
+
 jar {
     manifest {
         attributes([
@@ -142,24 +155,13 @@ jar {
     }
 }
 
-import groovy.json.JsonSlurper
-import groovy.json.JsonOutput
-processResources {
-    exclude '.cache'
+task apiJar(type: Jar) {
+    classifier = "api"
+    from sourceSets.main.output
+    from sourceSets.main.allJava
+    include 'com/rexbas/bouncingballs/api/**/*'
+}
 
-    // Will minify the json files of your mod when you build the jar.
-    // Helps reduce files size!
-    doLast {
-        def jsonMinifyStart = System.currentTimeMillis()
-        def jsonMinified = 0
-        def jsonBytesSaved = 0
-        fileTree(dir: outputs.files.asPath, include: '**/*.json').each {
-            File file = it
-            jsonMinified++
-            def oldLength = file.length()
-            file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
-            jsonBytesSaved += oldLength - file.length()
-        }
-        println('Minified ' + jsonMinified + ' json files. Saved ' + jsonBytesSaved + ' bytes. Took ' + (System.currentTimeMillis() - jsonMinifyStart) + 'ms.')
-    }
+artifacts {
+    archives apiJar
 }
