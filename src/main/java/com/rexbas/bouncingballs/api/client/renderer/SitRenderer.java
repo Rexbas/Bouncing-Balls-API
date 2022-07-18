@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.IEntityRenderer;
 import net.minecraft.client.renderer.entity.LivingRenderer;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.client.renderer.entity.model.EntityModel;
+import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Pose;
 import net.minecraft.util.Direction;
@@ -20,7 +20,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public class SitRenderer<T extends LivingEntity, M extends EntityModel<T>> extends EntityRenderer<T> implements IEntityRenderer<T, M> {
+public class SitRenderer<T extends LivingEntity, M extends BipedModel<T>> extends EntityRenderer<T> implements IEntityRenderer<T, M> {
 	
 	protected LivingRenderer<T, M> livingRenderer;
 
@@ -92,6 +92,13 @@ public class SitRenderer<T extends LivingEntity, M extends EntityModel<T>> exten
 
 		this.livingRenderer.getModel().prepareMobModel(entity, f5, f8, partialRenderTick);
 		this.livingRenderer.getModel().setupAnim(entity, f5, f8, f7, f2, f6);
+		
+		// Stop moving the arms
+		this.livingRenderer.getModel().rightArm.xRot = (-(float)Math.PI / 5F);
+		this.livingRenderer.getModel().leftArm.xRot = (-(float)Math.PI / 5F);
+		this.livingRenderer.getModel().rightArm.zRot = 0;
+		this.livingRenderer.getModel().leftArm.zRot = 0;
+		
 		Minecraft minecraft = Minecraft.getInstance();
 		boolean flag = this.livingRenderer.isBodyVisible(entity);
 		boolean flag1 = !flag && !entity.isInvisibleTo(minecraft.player);
