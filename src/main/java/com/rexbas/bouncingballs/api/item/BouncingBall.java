@@ -1,6 +1,6 @@
 package com.rexbas.bouncingballs.api.item;
 
-import com.rexbas.bouncingballs.BouncingBallsAPI.BouncingBallsSounds;
+import com.rexbas.bouncingballs.api.BouncingBallsAPI.BouncingBallsSounds;
 import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 
@@ -59,7 +59,16 @@ public class BouncingBall extends Item implements IBouncingBall {
 			if (properties.mustStartOnGround && cap.getConsecutiveBounces() == 0) {
 				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && entity.isOnGround() && !entity.isInWater() && !entity.isInLava() && hasConsumptionItem(entity);
 			}
-			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces  && !entity.isInWater() && !entity.isInLava() && hasConsumptionItem(entity);
+			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && !entity.isInWater() && !entity.isInLava() && hasConsumptionItem(entity);
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean shouldSitOnBall(LivingEntity entity) {
+		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
+		if (cap != null) {
+			return cap.getConsecutiveBounces() > 0 && !entity.isOnGround();
 		}
 		return false;
 	}

@@ -1,16 +1,20 @@
-package com.rexbas.bouncingballs;
+package com.rexbas.bouncingballs.api;
 
 import com.rexbas.bouncingballs.api.capability.BounceCapability;
 import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
+import com.rexbas.bouncingballs.api.client.renderer.SitRenderer;
 import com.rexbas.bouncingballs.api.item.IBouncingBall;
 
+import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
+import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.Capability.IStorage;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -126,6 +130,24 @@ public class BouncingBallsAPI {
     			}
     			event.setDamageMultiplier(multiplier);
     			player.hurtMarked = true;
+    		}
+    	}
+    	
+    	
+		// TODO -> RenderLivingEvent<LivingEntity, EntityModel<T>>
+    	
+    	@SubscribeEvent
+    	public static void onPlayerRender(RenderPlayerEvent.Pre event) {
+    		// TODO hand logic
+    		if (event.getPlayer().getMainHandItem().getItem() instanceof IBouncingBall) {
+    			IBouncingBall ball = (IBouncingBall) event.getPlayer().getMainHandItem().getItem();
+    			
+    			if (ball.shouldSitOnBall(event.getPlayer())) {
+    				event.setCanceled(true);
+
+        			SitRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> m = new SitRenderer<>(event.getRenderer());
+    				m.render((AbstractClientPlayerEntity) event.getEntityLiving(), 0, event.getPartialRenderTick(), event.getMatrixStack(), event.getBuffers(), event.getLight());
+    			}
     		}
     	}
     }
