@@ -31,10 +31,9 @@ public class BouncingBall extends Item implements IBouncingBall {
 	@Override
     public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
     	ItemStack stack = player.getItemInHand(hand);
-
-    	// TODO ALWAYS PREFER OFF HAND AND ONLY ALLOW 1 BALL TO BE ACTIVE AND NO SWITCHING
+    	
     	// TODO Comments
-    	if (hand == Hand.OFF_HAND && player.getMainHandItem().getItem() instanceof IBouncingBall) {
+    	if (hand == Hand.MAIN_HAND && player.getOffhandItem().getItem() instanceof IBouncingBall) {
     		return new ActionResult<ItemStack>(ActionResultType.FAIL, stack);
     	}
     	

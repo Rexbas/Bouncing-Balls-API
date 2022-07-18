@@ -133,22 +133,24 @@ public class BouncingBallsAPI {
     		}
     	}
     	
-    	
 		// TODO -> RenderLivingEvent<LivingEntity, EntityModel<T>>
     	
     	@SubscribeEvent
     	public static void onPlayerRender(RenderPlayerEvent.Pre event) {
-    		// TODO hand logic
-    		if (event.getPlayer().getMainHandItem().getItem() instanceof IBouncingBall) {
-    			IBouncingBall ball = (IBouncingBall) event.getPlayer().getMainHandItem().getItem();
-    			
-    			if (ball.shouldSitOnBall(event.getPlayer())) {
-    				event.setCanceled(true);
-
-        			SitRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> m = new SitRenderer<>(event.getRenderer());
-    				m.render((AbstractClientPlayerEntity) event.getEntityLiving(), 0, event.getPartialRenderTick(), event.getMatrixStack(), event.getBuffers(), event.getLight());
-    			}
+    		IBouncingBall ball = null;
+    		if (event.getPlayer().getOffhandItem().getItem() instanceof IBouncingBall) {
+    			ball = (IBouncingBall) event.getPlayer().getOffhandItem().getItem();
     		}
+    		else if (event.getPlayer().getMainHandItem().getItem() instanceof IBouncingBall) {
+    			ball = (IBouncingBall) event.getPlayer().getMainHandItem().getItem();
+    		}
+    		
+			if (ball != null && ball.shouldSitOnBall(event.getPlayer())) {
+				event.setCanceled(true);
+
+    			SitRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> m = new SitRenderer<>(event.getRenderer());
+				m.render((AbstractClientPlayerEntity) event.getEntityLiving(), 0, event.getPartialRenderTick(), event.getMatrixStack(), event.getBuffers(), event.getLight());
+			}
     	}
     }
 }

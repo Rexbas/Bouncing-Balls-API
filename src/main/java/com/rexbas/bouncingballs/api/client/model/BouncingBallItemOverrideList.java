@@ -17,17 +17,23 @@ public class BouncingBallItemOverrideList extends ItemOverrideList {
 	private IBakedModel activeModel;
 	
 	public BouncingBallItemOverrideList(ModelResourceLocation activeModelLocation) {
-		this.activeModel = Minecraft.getInstance().getModelManager().getModel(activeModelLocation);;
+		this.activeModel = Minecraft.getInstance().getModelManager().getModel(activeModelLocation);
 	}
       
 	@Nullable
 	@Override
 	public IBakedModel resolve(IBakedModel original, ItemStack stack, @Nullable ClientWorld world, @Nullable LivingEntity entity) {
-		// TODO hand logic
-		if (entity != null && entity.getMainHandItem().getItem() instanceof IBouncingBall) {
-			IBouncingBall ball = (IBouncingBall) entity.getMainHandItem().getItem();
-
-			if (ball.shouldSitOnBall(entity)) {
+		if (entity != null) {
+    		IBouncingBall ball = null;
+    		
+    		if (stack.equals(entity.getOffhandItem(), false)) {
+    			ball = (IBouncingBall) entity.getOffhandItem().getItem();
+    		}
+    		else if (stack.equals(entity.getMainHandItem(), false) && !(entity.getOffhandItem().getItem() instanceof IBouncingBall)) {
+    			ball = (IBouncingBall) entity.getMainHandItem().getItem();
+    		}
+			
+			if (ball != null && ball.shouldSitOnBall(entity)) {
 				return activeModel;
 			}
 		}		
