@@ -103,6 +103,7 @@ public class BouncingBallsAPI {
     				cap.resetConsecutiveBounces();
     			});
     			
+    			// TODO hand logic check
     			if (player.getMainHandItem().getItem() instanceof IBouncingBall) {
     				((IBouncingBall) player.getMainHandItem().getItem()).onFall(player, player.getMainHandItem(), event.getDistance());
     			}
@@ -121,6 +122,7 @@ public class BouncingBallsAPI {
     				cap.resetConsecutiveBounces();
     			});
     			
+    			// TODO hand logic check
     			float multiplier = 1;
     			if (player.getMainHandItem().getItem() instanceof IBouncingBall) {
     				multiplier = ((IBouncingBall) player.getMainHandItem().getItem()).onFall(player, player.getMainHandItem(), event.getDistance());

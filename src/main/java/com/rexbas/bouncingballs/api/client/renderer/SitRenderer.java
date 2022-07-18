@@ -9,8 +9,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.IEntityRenderer;
 import net.minecraft.client.renderer.entity.LivingRenderer;
+import net.minecraft.client.renderer.entity.layers.HeldItemLayer;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.client.renderer.entity.model.BipedModel;
+import net.minecraft.client.renderer.entity.model.EntityModel;
+import net.minecraft.client.renderer.entity.model.IHasArm;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Pose;
 import net.minecraft.util.Direction;
@@ -20,13 +22,15 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public class SitRenderer<T extends LivingEntity, M extends BipedModel<T>> extends EntityRenderer<T> implements IEntityRenderer<T, M> {
+public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & IHasArm> extends EntityRenderer<T> implements IEntityRenderer<T, M> {
 	
 	protected LivingRenderer<T, M> livingRenderer;
+	protected BouncingBallHeldItemLayer<T, M> heldItemLayer;
 
 	public SitRenderer(LivingRenderer<T, M> livingRenderer) {
 		super(livingRenderer.getDispatcher());
 		this.livingRenderer = livingRenderer;
+		this.heldItemLayer = new BouncingBallHeldItemLayer<>(livingRenderer);
 	}
 
 	// Based on LivingRenderer
@@ -93,12 +97,6 @@ public class SitRenderer<T extends LivingEntity, M extends BipedModel<T>> extend
 		this.livingRenderer.getModel().prepareMobModel(entity, f5, f8, partialRenderTick);
 		this.livingRenderer.getModel().setupAnim(entity, f5, f8, f7, f2, f6);
 		
-		// Stop moving the arms
-		this.livingRenderer.getModel().rightArm.xRot = (-(float)Math.PI / 5F);
-		this.livingRenderer.getModel().leftArm.xRot = (-(float)Math.PI / 5F);
-		this.livingRenderer.getModel().rightArm.zRot = 0;
-		this.livingRenderer.getModel().leftArm.zRot = 0;
-		
 		Minecraft minecraft = Minecraft.getInstance();
 		boolean flag = this.livingRenderer.isBodyVisible(entity);
 		boolean flag1 = !flag && !entity.isInvisibleTo(minecraft.player);
@@ -112,7 +110,12 @@ public class SitRenderer<T extends LivingEntity, M extends BipedModel<T>> extend
 
 		if (!entity.isSpectator()) {
 			for (LayerRenderer<T, M> layerrenderer : this.livingRenderer.layers) {
-				layerrenderer.render(matrixStack, buffers, light, entity, f5, f8, partialRenderTick, f7, f2, f6);
+				if (layerrenderer instanceof HeldItemLayer) {
+					// Cancel the HeldItemLayer and render the BouncingBallHeldItemLayer
+					heldItemLayer.render(matrixStack, buffers, light, entity, f5, f8, partialRenderTick, f7, f2, f6);
+				} else {
+					layerrenderer.render(matrixStack, buffers, light, entity, f5, f8, partialRenderTick, f7, f2, f6);	
+				}
 			}
 		}
 

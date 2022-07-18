@@ -1,17 +1,9 @@
 package com.rexbas.bouncingballs.test;
 
-import com.rexbas.bouncingballs.api.client.model.BouncingBallItemOverrideList;
-import com.rexbas.bouncingballs.api.client.model.BouncingBallModel;
 import com.rexbas.bouncingballs.test.init.BouncingBallsTestItems;
 
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ModelResourceLocation;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.client.event.ModelBakeEvent;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -33,7 +25,7 @@ public class BouncingBallsTest {
 	@Mod.EventBusSubscriber(modid = BouncingBallsTest.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class Events {
     	
-    	@SubscribeEvent
+    	/*@SubscribeEvent
 		public static void onModelBakeEvent(ModelBakeEvent event) {
     		BouncingBallsTestItems.ITEMS.getEntries().forEach((ball) -> {
     			ModelResourceLocation modelLocation = new ModelResourceLocation(ball.get().getRegistryName(), "inventory");
@@ -50,6 +42,6 @@ public class BouncingBallsTest {
     		BouncingBallsTestItems.ITEMS.getEntries().forEach((ball) -> {
         		ModelLoader.addSpecialModel(new ModelResourceLocation(ball.get().getRegistryName() + "_active", "inventory"));
     		});
-        }
+        }*/
 	}	
 }
