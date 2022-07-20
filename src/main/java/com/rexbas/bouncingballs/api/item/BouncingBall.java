@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
@@ -120,6 +121,11 @@ public class BouncingBall extends Item implements IBouncingBall {
 		return 0f;
 	}
 	
+	@Override
+	public boolean onDamage(LivingEntity entity, DamageSource damageSource, float amount) {
+		return false;
+	}
+
 	protected boolean hasConsumptionItem(LivingEntity entity) {
 		if (properties.consumptionItem.getItem() == Items.AIR) {
 			return true;

@@ -2,11 +2,13 @@ package com.rexbas.bouncingballs.api.item;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.DamageSource;
 
 public interface IBouncingBall {
 	public boolean canBounce(LivingEntity entity);
 	public boolean shouldSitOnBall(LivingEntity entity);
 	public void bounce(LivingEntity entity, float motionY);
 	public float onFall(LivingEntity entity, ItemStack stack, float fallDistance);
-	// TODO on damage
+	public boolean onDamage(LivingEntity entity, DamageSource damageSource, float amount);
+	// TODO on liquid
 }

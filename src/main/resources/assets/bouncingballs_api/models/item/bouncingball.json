@@ -1,8 +1,4 @@
 {
-	"texture_size": [64, 64],
-	"textures": {
-		"layer0": "bouncingballs_test:item/blue"
-	},
 	"elements": [
 		{
 			"from": [0, 5, 5],
