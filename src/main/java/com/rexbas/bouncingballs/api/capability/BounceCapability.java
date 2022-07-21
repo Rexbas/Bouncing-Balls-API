@@ -3,11 +3,11 @@ package com.rexbas.bouncingballs.api.capability;
 public class BounceCapability implements IBounceCapability {
 	
 	private int consecutiveBounces;
-	public boolean startTickOnGround;
+	public boolean startTickGroundOrLiquid;
 	
 	public BounceCapability() {
 		this.consecutiveBounces = 0;
-		this.startTickOnGround = false;
+		this.startTickGroundOrLiquid = false;
 	}
 	
 	@Override
@@ -26,12 +26,12 @@ public class BounceCapability implements IBounceCapability {
 	}
 
 	@Override
-	public void setStartTickOnGround(boolean onGround) {
-		this.startTickOnGround = onGround;
+	public void setStartTickGroundOrLiquid(boolean onGroundOrLiquid) {
+		this.startTickGroundOrLiquid = onGroundOrLiquid;
 	}
 
 	@Override
-	public boolean getStartTickOnGround() {
-		return this.startTickOnGround;
+	public boolean getStartTickGroundOrLiquid() {
+		return this.startTickGroundOrLiquid;
 	}
 }

@@ -8,6 +8,9 @@ import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ITag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -29,28 +32,47 @@ public class BouncingBallsAPIEvents {
 		}
 	}
 	
+	// TODO -> LivingTickEvent
+	
 	@SubscribeEvent
 	public static void onPlayerTick(PlayerTickEvent event) {
+		final IBouncingBall ball;
+		if (event.player.getOffhandItem().getItem() instanceof IBouncingBall) {
+			ball = (IBouncingBall) event.player.getOffhandItem().getItem();
+		}
+		else if (event.player.getMainHandItem().getItem() instanceof IBouncingBall) {
+			ball = (IBouncingBall) event.player.getMainHandItem().getItem();
+		}
+		else {
+			ball = null;
+		}
+
 		event.player.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
 			if (event.phase == TickEvent.Phase.START) {
-				cap.setStartTickOnGround(event.player.isOnGround());
+				cap.setStartTickGroundOrLiquid(event.player.isOnGround() || event.player.level.containsAnyLiquid(event.player.getBoundingBox()));
 			}
 			else if (event.phase == TickEvent.Phase.END) {
-				if (cap.getConsecutiveBounces() > 0 && event.player.isOnGround() && cap.getStartTickOnGround()) {
+				if (cap.getConsecutiveBounces() > 0 && (event.player.isOnGround() || event.player.level.containsAnyLiquid(event.player.getBoundingBox())) && cap.getStartTickGroundOrLiquid()) {
 					cap.resetConsecutiveBounces();
 					
-					if (event.player.getOffhandItem().getItem() instanceof IBouncingBall) {
-						((IBouncingBall) event.player.getOffhandItem().getItem()).onFall(event.player, event.player.getOffhandItem(), 0);
+					if (ball != null && event.player.isOnGround()) {
+						ball.onFall(event.player, event.player.getOffhandItem(), 0);
+						event.player.hurtMarked = true;
 					}
-					else if (event.player.getMainHandItem().getItem() instanceof IBouncingBall) {
-						((IBouncingBall) event.player.getMainHandItem().getItem()).onFall(event.player, event.player.getMainHandItem(), 0);
-					}
-					event.player.hurtMarked = true;
 				}
 			}
 		});
+		
+		if (ball != null && event.player.isAffectedByFluids() && !event.player.isSwimming()) {
+			for (ITag<Fluid> fluid : FluidTags.getWrappers()) {
+				if (event.player.getFluidHeight(fluid) > 0) {
+					ball.inLiquid(event.player, fluid);
+					break;
+				}
+			}
+		}
 	}
-	
+
 	@SubscribeEvent
 	public static void onCreativePlayerFall(PlayerFlyableFallEvent event) {
 		event.getPlayer().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
@@ -71,7 +93,7 @@ public class BouncingBallsAPIEvents {
 		event.getEntityLiving().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
 			cap.resetConsecutiveBounces();
 		});
-		
+				
 		float multiplier = 1;
 		if (event.getEntityLiving().getOffhandItem().getItem() instanceof IBouncingBall) {
 			multiplier = ((IBouncingBall) event.getEntityLiving().getOffhandItem().getItem()).onFall(event.getEntityLiving(), event.getEntityLiving().getOffhandItem(), event.getDistance());

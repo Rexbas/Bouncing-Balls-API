@@ -7,9 +7,12 @@ import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ITag;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
@@ -17,6 +20,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -56,10 +60,11 @@ public class BouncingBall extends Item implements IBouncingBall {
 	public boolean canBounce(LivingEntity entity) {
 		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
 		if (cap != null) {
-			if (properties.mustStartOnGround && cap.getConsecutiveBounces() == 0) {
-				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && entity.isOnGround() && !entity.isInWater() && !entity.isInLava() && hasConsumptionItem(entity);
+			// TODO has to get out of liquid first to reset consecutive bounces
+			if (properties.mustStartOnGroundOrLiquid && cap.getConsecutiveBounces() == 0) {
+				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && (entity.isOnGround() || entity.isInWater()) && !entity.isEyeInFluid(FluidTags.WATER) && !entity.isInLava() && hasConsumptionItem(entity);
 			}
-			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && !entity.isInWater() && !entity.isInLava() && hasConsumptionItem(entity);
+			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && !entity.isEyeInFluid(FluidTags.WATER) && !entity.isInLava() && hasConsumptionItem(entity);
 		}
 		return false;
 	}
@@ -68,11 +73,12 @@ public class BouncingBall extends Item implements IBouncingBall {
 	public boolean shouldSitOnBall(LivingEntity entity) {
 		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
 		if (cap != null) {
-			return cap.getConsecutiveBounces() > 0 && !entity.isOnGround();
+			// TODO if it just came out of the water and not yet on ground
+			return (cap.getConsecutiveBounces() > 0 && !entity.isOnGround() || entity.isInWater()) && !entity.isSwimming();
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Add y-motion to the entity and reduce the consumption item if applicable.
 	 * 
@@ -125,6 +131,17 @@ public class BouncingBall extends Item implements IBouncingBall {
 	public boolean onDamage(LivingEntity entity, DamageSource damageSource, float amount) {
 		return false;
 	}
+	
+	@Override
+	public void inLiquid(LivingEntity entity, ITag<Fluid> fluid) {
+		if (fluid == FluidTags.WATER) {
+			double d = 0.01;
+			if (entity.isEyeInFluid(FluidTags.WATER)) {
+				d *= 3;
+			}
+			entity.setDeltaMovement(entity.getDeltaMovement().add(0.0D, entity.getAttribute(ForgeMod.SWIM_SPEED.get()).getValue() * d, 0.0D));
+		}
+	}
 
 	protected boolean hasConsumptionItem(LivingEntity entity) {
 		if (properties.consumptionItem.getItem() == Items.AIR) {
@@ -170,18 +187,18 @@ public class BouncingBall extends Item implements IBouncingBall {
 		protected float rebounceHeight;
 		protected float damageMultiplier;
 		
-		protected boolean mustStartOnGround;
+		protected boolean mustStartOnGroundOrLiquid;
 		protected int maxConsecutiveBounces;
 		protected ItemStack consumptionItem;
 		
-		public Properties(int durability, Item repairItem, float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier, boolean mustStartOnGround, int maxConsecutiveBounces, Item consumptionItem) {
+		public Properties(int durability, Item repairItem, float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier, boolean mustStartOnGroundOrLiquid, int maxConsecutiveBounces, Item consumptionItem) {
 			this.durability = durability;
 			this.repairItem = repairItem;
 			this.forwardMotion = forwardMotion;
 			this.upwardMotion = upwardMotion;
 			this.rebounceHeight = rebounceHeight;
 			this.damageMultiplier = damageMultiplier;
-			this.mustStartOnGround = mustStartOnGround;
+			this.mustStartOnGroundOrLiquid = mustStartOnGroundOrLiquid;
 			this.maxConsecutiveBounces = maxConsecutiveBounces;
 			this.consumptionItem = new ItemStack(consumptionItem);
 		}
