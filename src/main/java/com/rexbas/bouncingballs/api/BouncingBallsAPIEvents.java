@@ -1,11 +1,10 @@
 package com.rexbas.bouncingballs.api;
 
 import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
-import com.rexbas.bouncingballs.api.client.renderer.SitRenderer;
+import com.rexbas.bouncingballs.api.client.renderer.PlayerSitRenderer;
 import com.rexbas.bouncingballs.api.item.IBouncingBall;
 
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
@@ -114,9 +113,7 @@ public class BouncingBallsAPIEvents {
 			event.setCanceled(((IBouncingBall) event.getEntityLiving().getMainHandItem().getItem()).onDamage(event.getEntityLiving(), event.getSource(), event.getAmount()));
 		}
 	}
-	
-	// TODO -> RenderLivingEvent<LivingEntity, EntityModel<T>>
-	
+		
 	@SubscribeEvent
 	public static void onPlayerRender(RenderPlayerEvent.Pre event) {
 		IBouncingBall ball = null;
@@ -130,8 +127,8 @@ public class BouncingBallsAPIEvents {
 		if (ball != null && ball.shouldSitOnBall(event.getPlayer())) {
 			event.setCanceled(true);
 
-			SitRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> sitRenderer = new SitRenderer<>(event.getRenderer());
-			sitRenderer.render((AbstractClientPlayerEntity) event.getEntityLiving(), 0, event.getPartialRenderTick(), event.getMatrixStack(), event.getBuffers(), event.getLight());
+			PlayerSitRenderer sitRenderer = new PlayerSitRenderer(event.getRenderer(), (AbstractClientPlayerEntity) event.getPlayer());
+			sitRenderer.render((AbstractClientPlayerEntity) event.getPlayer(), 0, event.getPartialRenderTick(), event.getMatrixStack(), event.getBuffers(), event.getLight());
 		}
 	}
 }
