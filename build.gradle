@@ -158,6 +158,7 @@ jar {
 task apiJar(type: Jar) {
     classifier = "api"
     from sourceSets.main.output
+    include "com/"
     from sourceSets.main.allJava
 }
 
