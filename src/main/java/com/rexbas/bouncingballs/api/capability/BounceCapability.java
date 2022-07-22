@@ -1,28 +1,30 @@
 package com.rexbas.bouncingballs.api.capability;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class BounceCapability implements IBounceCapability {
 	
-	private int consecutiveBounces;
+	private AtomicInteger consecutiveBounces;
 	public boolean startTickGroundOrLiquid;
 	
 	public BounceCapability() {
-		this.consecutiveBounces = 0;
+		this.consecutiveBounces = new AtomicInteger(0);
 		this.startTickGroundOrLiquid = false;
 	}
 	
 	@Override
 	public void addBounce() {
-		this.consecutiveBounces += 1;
+		this.consecutiveBounces.incrementAndGet();
 	}
 	
 	@Override
 	public void resetConsecutiveBounces() {
-		this.consecutiveBounces = 0;
+		this.consecutiveBounces.set(0);
 	}
 	
 	@Override
 	public int getConsecutiveBounces() {
-		return this.consecutiveBounces;
+		return this.consecutiveBounces.get();
 	}
 
 	@Override

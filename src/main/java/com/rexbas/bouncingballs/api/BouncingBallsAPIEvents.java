@@ -1,11 +1,14 @@
 package com.rexbas.bouncingballs.api;
 
+import java.lang.reflect.Method;
+
 import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
 import com.rexbas.bouncingballs.api.client.renderer.PlayerSitRenderer;
 import com.rexbas.bouncingballs.api.item.IBouncingBall;
 
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.tags.FluidTags;
@@ -13,13 +16,13 @@ import net.minecraft.tags.ITag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.PlayerFlyableFallEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 @Mod.EventBusSubscriber(modid = BouncingBallsAPI.MODID)
 public class BouncingBallsAPIEvents {
@@ -30,43 +33,42 @@ public class BouncingBallsAPIEvents {
 			event.addCapability(new ResourceLocation(BouncingBallsAPI.MODID, "capability.bounce"), new BounceCapabilityProvider());
 		}
 	}
-	
-	// TODO -> LivingTickEvent
-	
+		
 	@SubscribeEvent
-	public static void onPlayerTick(PlayerTickEvent event) {
+	public static void onLivingUpdate(LivingUpdateEvent event) throws Throwable {
 		final IBouncingBall ball;
-		if (event.player.getOffhandItem().getItem() instanceof IBouncingBall) {
-			ball = (IBouncingBall) event.player.getOffhandItem().getItem();
+		if (event.getEntityLiving().getOffhandItem().getItem() instanceof IBouncingBall) {
+			ball = (IBouncingBall) event.getEntityLiving().getOffhandItem().getItem();
 		}
-		else if (event.player.getMainHandItem().getItem() instanceof IBouncingBall) {
-			ball = (IBouncingBall) event.player.getMainHandItem().getItem();
+		else if (event.getEntityLiving().getMainHandItem().getItem() instanceof IBouncingBall) {
+			ball = (IBouncingBall) event.getEntityLiving().getMainHandItem().getItem();
 		}
 		else {
 			ball = null;
 		}
-
-		event.player.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
-			if (event.phase == TickEvent.Phase.START) {
-				cap.setStartTickGroundOrLiquid(event.player.isOnGround() || event.player.level.containsAnyLiquid(event.player.getBoundingBox()));
-			}
-			else if (event.phase == TickEvent.Phase.END) {
-				if (cap.getConsecutiveBounces() > 0 && (event.player.isOnGround() || event.player.level.containsAnyLiquid(event.player.getBoundingBox())) && cap.getStartTickGroundOrLiquid()) {
+		
+		event.getEntityLiving().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
+			if (cap.getConsecutiveBounces() > 0) {
+				if (event.getEntityLiving().fallDistance == 0 && (event.getEntityLiving().isOnGround() || event.getEntityLiving().level.containsAnyLiquid(event.getEntityLiving().getBoundingBox()))) {
 					cap.resetConsecutiveBounces();
 					
-					if (ball != null && event.player.isOnGround()) {
-						ball.onFall(event.player, event.player.getOffhandItem(), 0);
-						event.player.hurtMarked = true;
+					if (ball != null && event.getEntityLiving().isOnGround()) {
+						ball.onFall(event.getEntityLiving(), event.getEntityLiving().getOffhandItem(), 0);
+						event.getEntityLiving().hurtMarked = true;
 					}
 				}
 			}
 		});
 		
-		if (ball != null && event.player.isAffectedByFluids() && !event.player.isSwimming()) {
-			for (ITag<Fluid> fluid : FluidTags.getWrappers()) {
-				if (event.player.getFluidHeight(fluid) > 0) {
-					ball.inLiquid(event.player, fluid);
-					break;
+		if (ball != null) {
+			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "func_241208_cS_"); // isAffectedByFluids
+			boolean isAffectedByFluids = (boolean) m.invoke(event.getEntityLiving());
+			if (isAffectedByFluids && !event.getEntityLiving().isSwimming()) {
+				for (ITag<Fluid> fluid : FluidTags.getWrappers()) {
+					if (event.getEntityLiving().getFluidHeight(fluid) > 0) {
+						ball.inLiquid(event.getEntityLiving(), fluid);
+						break;
+					}
 				}
 			}
 		}
