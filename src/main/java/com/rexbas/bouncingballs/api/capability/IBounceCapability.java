@@ -4,6 +4,10 @@ public interface IBounceCapability {
 	public void addBounce();
 	public void resetConsecutiveBounces();
 	public int getConsecutiveBounces();
-	public void setStartTickGroundOrLiquid(boolean onGroundOrLiquid);
-	public boolean getStartTickGroundOrLiquid();
+	public void increaseTicksOnGround();
+	public void increaseTicksInLiquid();
+	public void resetTicksOnGround();
+	public void resetTicksInLiquid();
+	public int getTicksOnGround();
+	public int getTicksInLiquid();
 }

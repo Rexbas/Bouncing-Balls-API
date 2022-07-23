@@ -4,7 +4,6 @@ import com.rexbas.bouncingballs.api.BouncingBallsAPI.BouncingBallsSounds;
 import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
@@ -17,6 +16,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -62,7 +62,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 		if (cap != null) {
 			// TODO has to get out of liquid first to reset consecutive bounces
 			if (properties.mustStartOnGroundOrLiquid && cap.getConsecutiveBounces() == 0) {
-				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && (entity.isOnGround() || entity.isInWater()) && !entity.isEyeInFluid(FluidTags.WATER) && !entity.isInLava() && hasConsumptionItem(entity);
+				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && (cap.getTicksOnGround() > 0 || (cap.getTicksInLiquid() > 0 && entity.isInWater())) && !entity.isEyeInFluid(FluidTags.WATER) && !entity.isInLava() && hasConsumptionItem(entity);
 			}
 			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && !entity.isEyeInFluid(FluidTags.WATER) && !entity.isInLava() && hasConsumptionItem(entity);
 		}
@@ -135,9 +135,10 @@ public class BouncingBall extends Item implements IBouncingBall {
 	@Override
 	public void inLiquid(LivingEntity entity, ITag<Fluid> fluid) {
 		if (fluid == FluidTags.WATER) {
-			double d = 0.01;
-			if (entity.isEyeInFluid(FluidTags.WATER)) {
-				d *= 3;
+			double d = 0.05 * entity.getFluidHeight(fluid) + 0.0075;
+			
+			if (entity.getDeltaMovement().y() < 0) {
+				d += -0.6 * entity.getDeltaMovement().y();	
 			}
 			entity.setDeltaMovement(entity.getDeltaMovement().add(0.0D, entity.getAttribute(ForgeMod.SWIM_SPEED.get()).getValue() * d, 0.0D));
 		}
@@ -169,9 +170,9 @@ public class BouncingBall extends Item implements IBouncingBall {
 		stack.hurtAndBreak(1, entity, (p) -> {});
 	}
 	
-	public void playBounceSound(World world, Entity entity) {
+	public void playBounceSound(World world, LivingEntity entity) {
 		float pitch = world.random.nextFloat() * (1.1f - 0.9f) + 0.9f;
-		entity.playSound(getBounceSound(), 1, pitch);
+		world.playSound(null, entity.blockPosition(), getBounceSound(), SoundCategory.AMBIENT, 1, pitch);
 	}
 	
 	public SoundEvent getBounceSound() {

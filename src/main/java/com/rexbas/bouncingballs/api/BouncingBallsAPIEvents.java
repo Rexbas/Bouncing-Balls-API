@@ -33,7 +33,11 @@ public class BouncingBallsAPIEvents {
 			event.addCapability(new ResourceLocation(BouncingBallsAPI.MODID, "capability.bounce"), new BounceCapabilityProvider());
 		}
 	}
-		
+	
+	/**
+	 * {@link #onLivingUpdate} is the main event that resets the consecutive bounces in water and calls {@link IBouncingBall#inLiquid} for the ball.
+	 * When a fall event is not fired this is a backup to reset the consecutive bounces on the ground. For example, when a player is stuck in cobweb.
+	 */
 	@SubscribeEvent
 	public static void onLivingUpdate(LivingUpdateEvent event) throws Throwable {
 		final IBouncingBall ball;
@@ -48,20 +52,30 @@ public class BouncingBallsAPIEvents {
 		}
 		
 		event.getEntityLiving().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
+			boolean inLiquid = event.getEntityLiving().level.containsAnyLiquid(event.getEntityLiving().getBoundingBox());
 			if (cap.getConsecutiveBounces() > 0) {
-				if (event.getEntityLiving().fallDistance == 0 && (event.getEntityLiving().isOnGround() || event.getEntityLiving().level.containsAnyLiquid(event.getEntityLiving().getBoundingBox()))) {
+				if ((event.getEntityLiving().fallDistance == 0 && cap.getTicksOnGround() > 3) || cap.getTicksInLiquid() > 3) {
 					cap.resetConsecutiveBounces();
-					
-					if (ball != null && event.getEntityLiving().isOnGround()) {
-						ball.onFall(event.getEntityLiving(), event.getEntityLiving().getOffhandItem(), 0);
-						event.getEntityLiving().hurtMarked = true;
-					}
 				}
+			}
+			
+			if (event.getEntityLiving().isOnGround()) {
+				cap.increaseTicksOnGround();
+			}
+			else {
+				cap.resetTicksOnGround();
+			}
+			
+			if (inLiquid) {
+				cap.increaseTicksInLiquid();
+			}
+			else {
+				cap.resetTicksInLiquid();
 			}
 		});
 		
 		if (ball != null) {
-			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "func_241208_cS_"); // isAffectedByFluids
+			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "func_241208_cS_"); // isAffectedByFluids()
 			boolean isAffectedByFluids = (boolean) m.invoke(event.getEntityLiving());
 			if (isAffectedByFluids && !event.getEntityLiving().isSwimming()) {
 				for (ITag<Fluid> fluid : FluidTags.getWrappers()) {
@@ -74,6 +88,9 @@ public class BouncingBallsAPIEvents {
 		}
 	}
 
+	/**
+	 * {@link #onCreativePlayerFall} is the main event in creative mode that resets the consecutive bounces on the ground and calls {@link IBouncingBall#onFall} for the ball.
+	 */
 	@SubscribeEvent
 	public static void onCreativePlayerFall(PlayerFlyableFallEvent event) {
 		event.getPlayer().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
@@ -89,12 +106,15 @@ public class BouncingBallsAPIEvents {
 		event.getPlayer().hurtMarked = true;
 	}
 	
+	/**
+	 * {@link #onLivingFall} is the main event in survival mode that resets the consecutive bounces on the ground and calls {@link IBouncingBall#onFall} for the ball.
+	 */
 	@SubscribeEvent
 	public static void onLivingFall(LivingFallEvent event) {
 		event.getEntityLiving().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
 			cap.resetConsecutiveBounces();
 		});
-				
+		
 		float multiplier = 1;
 		if (event.getEntityLiving().getOffhandItem().getItem() instanceof IBouncingBall) {
 			multiplier = ((IBouncingBall) event.getEntityLiving().getOffhandItem().getItem()).onFall(event.getEntityLiving(), event.getEntityLiving().getOffhandItem(), event.getDistance());

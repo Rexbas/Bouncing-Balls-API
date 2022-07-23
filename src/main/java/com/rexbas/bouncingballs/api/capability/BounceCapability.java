@@ -5,16 +5,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BounceCapability implements IBounceCapability {
 	
 	private AtomicInteger consecutiveBounces;
-	public boolean startTickGroundOrLiquid;
+	private int ticksOnGround;
+	private int ticksInLiquid;
 	
 	public BounceCapability() {
 		this.consecutiveBounces = new AtomicInteger(0);
-		this.startTickGroundOrLiquid = false;
+		this.ticksOnGround = 0;
+		this.ticksInLiquid = 0;
 	}
 	
 	@Override
 	public void addBounce() {
 		this.consecutiveBounces.incrementAndGet();
+		this.ticksOnGround = 0;
+		this.ticksInLiquid = 0;
 	}
 	
 	@Override
@@ -26,14 +30,34 @@ public class BounceCapability implements IBounceCapability {
 	public int getConsecutiveBounces() {
 		return this.consecutiveBounces.get();
 	}
-
+	
 	@Override
-	public void setStartTickGroundOrLiquid(boolean onGroundOrLiquid) {
-		this.startTickGroundOrLiquid = onGroundOrLiquid;
+	public void increaseTicksOnGround() {
+		this.ticksOnGround++;
 	}
-
+	
 	@Override
-	public boolean getStartTickGroundOrLiquid() {
-		return this.startTickGroundOrLiquid;
+	public void increaseTicksInLiquid() {
+		this.ticksInLiquid++;
+	}
+	
+	@Override
+	public void resetTicksOnGround() {
+		this.ticksOnGround = 0;
+	}
+	
+	@Override
+	public void resetTicksInLiquid() {
+		this.ticksInLiquid = 0;
+	}
+	
+	@Override
+	public int getTicksOnGround() {
+		return this.ticksOnGround;
+	}
+	
+	@Override
+	public int getTicksInLiquid() {
+		return this.ticksInLiquid;
 	}
 }
