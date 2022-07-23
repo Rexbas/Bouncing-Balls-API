@@ -1,5 +1,7 @@
 package com.rexbas.bouncingballs.api.item;
 
+import java.util.HashSet;
+
 import com.rexbas.bouncingballs.api.BouncingBallsAPI.BouncingBallsSounds;
 import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
@@ -66,12 +68,19 @@ public class BouncingBall extends Item implements IBouncingBall {
 		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
 		if (cap != null) {
 			if (properties.mustStartOnGroundOrFluid && cap.getConsecutiveBounces() == 0) {
-				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && (cap.getTicksOnGround() > 0 ||
-						(cap.getTicksInFluid() > 0 && entity.isInWater())) && !entity.isEyeInFluid(FluidTags.WATER) &&
-						!entity.isInLava() && hasConsumptionItem(entity);
+				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && 
+						(cap.getTicksOnGround() > 0 ||
+								(cap.getTicksInFluid() > 0 && cap.getLastFluid() != null &&
+								properties.fluidList.contains(cap.getLastFluid()) &&
+								!entity.isEyeInFluid(cap.getLastFluid()))) &&
+						hasConsumptionItem(entity);
 			}
-			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && !entity.isEyeInFluid(FluidTags.WATER) &&
-					!entity.isInLava() && hasConsumptionItem(entity);
+			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces &&
+					(!entity.level.containsAnyLiquid(entity.getBoundingBox()) ||
+							(cap.getLastFluid() != null &&
+							properties.fluidList.contains(cap.getLastFluid()) &&
+							!entity.isEyeInFluid(cap.getLastFluid())))
+					&& hasConsumptionItem(entity);
 		}
 		return false;
 	}
@@ -169,7 +178,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 */
 	@Override
 	public void inFluid(LivingEntity entity, ITag<Fluid> fluid) {
-		if (fluid == FluidTags.WATER) {
+		if (properties.fluidList.contains(fluid)) {
 			
 			entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
 				cap.setLastFluid(fluid);
@@ -233,16 +242,16 @@ public class BouncingBall extends Item implements IBouncingBall {
 	
 	public static class Properties {
 		
-		protected int durability;
-		protected Item repairItem;
-		protected float forwardMotion;
-		protected float upwardMotion;
-		protected float rebounceHeight;
-		protected float damageMultiplier;
-		
-		protected boolean mustStartOnGroundOrFluid;
-		protected int maxConsecutiveBounces;
-		protected ItemStack consumptionItem;
+		public int durability;
+		public Item repairItem;
+		public float forwardMotion;
+		public float upwardMotion;
+		public float rebounceHeight;
+		public float damageMultiplier;
+		public boolean mustStartOnGroundOrFluid;
+		public int maxConsecutiveBounces;
+		public ItemStack consumptionItem;
+		public HashSet<ITag<Fluid>> fluidList;
 		
 		public Properties(int durability, Item repairItem, float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier, boolean mustStartOnGroundOrFluid, int maxConsecutiveBounces, Item consumptionItem) {
 			this.durability = durability;
@@ -254,6 +263,11 @@ public class BouncingBall extends Item implements IBouncingBall {
 			this.mustStartOnGroundOrFluid = mustStartOnGroundOrFluid;
 			this.maxConsecutiveBounces = maxConsecutiveBounces;
 			this.consumptionItem = new ItemStack(consumptionItem);
+			this.fluidList = new HashSet<ITag<Fluid>>();
+		}
+		
+		public Properties(int durability, Item repairItem, float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier) {
+			this(durability, repairItem, forwardMotion, upwardMotion, rebounceHeight, damageMultiplier, true, 1, Items.AIR);
 		}
 		
 		public Properties(float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier) {
@@ -266,6 +280,11 @@ public class BouncingBall extends Item implements IBouncingBall {
 		
 		public Properties() {
 			this(100, Items.SLIME_BALL, 0.5f, 0.65f, 10f, 0.5f, true, 1, Items.AIR);
+		}
+		
+		public Properties addFluid(ITag<Fluid> fluid) {
+			fluidList.add(fluid);
+			return this;
 		}
 	}
 }
