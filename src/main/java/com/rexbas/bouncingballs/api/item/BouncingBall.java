@@ -37,7 +37,6 @@ public class BouncingBall extends Item implements IBouncingBall {
     public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
     	ItemStack stack = player.getItemInHand(hand);
     	
-    	// TODO Comments
     	if (hand == Hand.MAIN_HAND && player.getOffhandItem().getItem() instanceof IBouncingBall) {
     		return new ActionResult<ItemStack>(ActionResultType.FAIL, stack);
     	}
@@ -56,6 +55,12 @@ public class BouncingBall extends Item implements IBouncingBall {
 		return properties.repairItem != Items.AIR && repair.getItem() == properties.repairItem;
 	}
 	
+	/**
+	 * Determines if the entity can bounce.
+	 * 
+	 * @param entity The entity using the ball.
+	 * @return Whether or not the entity can bounce.
+	 */
 	@Override
 	public boolean canBounce(LivingEntity entity) {
 		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
@@ -71,6 +76,12 @@ public class BouncingBall extends Item implements IBouncingBall {
 		return false;
 	}
 	
+	/**
+	 * Determine if the entity should be in a sitting pose.
+	 * 
+	 * @param entity The entity using the ball.
+	 * @return Whether or not the entity should be in the sitting pose.
+	 */
 	@Override
 	public boolean shouldSitOnBall(LivingEntity entity) {
 		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
@@ -84,7 +95,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	/**
 	 * Add y-motion to the entity and reduce the consumption item if applicable.
 	 * 
-	 * @param entity  The entity to bounce.
+	 * @param entity  The entity using the ball.
 	 * @param motionY The y-motion to add.
 	 */
 	@Override
@@ -110,6 +121,14 @@ public class BouncingBall extends Item implements IBouncingBall {
 		}
 	}
 	
+	/**
+	 * Handles a fall with the ball and returns a damage multiplier.
+	 * 
+	 * @param entity 		The entity using the ball.
+	 * @param stack 		The ItemStack containing the ball.
+	 * @param fallDistance	The fall distance.
+	 * @return A multiplier for the fall damage.
+	 */
 	@Override
 	public float onFall(LivingEntity entity, ItemStack stack, float fallDistance) {
 		if (fallDistance > properties.rebounceHeight) {
@@ -129,11 +148,25 @@ public class BouncingBall extends Item implements IBouncingBall {
 		return 0f;
 	}
 	
+	/**
+	 * Handles damage (except fall damage)
+	 * 
+	 * @param entity		The entity using the ball.
+	 * @param damageSource	The damage source.
+	 * @param amount		The damage amount.
+	 * @return Whether or not the damage should be canceled.
+	 */
 	@Override
 	public boolean onDamage(LivingEntity entity, DamageSource damageSource, float amount) {
 		return false;
 	}
 	
+	/**
+	 * Handles what happens when the entity is in a fluid.
+	 * 
+	 * @param entity	The entity using the ball.
+	 * @param fluid		The fluid.
+	 */
 	@Override
 	public void inFluid(LivingEntity entity, ITag<Fluid> fluid) {
 		if (fluid == FluidTags.WATER) {
@@ -150,7 +183,32 @@ public class BouncingBall extends Item implements IBouncingBall {
 			entity.setDeltaMovement(entity.getDeltaMovement().add(0.0D, entity.getAttribute(ForgeMod.SWIM_SPEED.get()).getValue() * d, 0.0D));
 		}
 	}
-
+	
+	/**
+	 * Damage the ball if applicable.
+	 * 
+	 * @param entity	The entity using the ball.
+	 * @param stack		The ItemStack containing the ball.
+	 */
+	public void damageBall(LivingEntity entity, ItemStack stack) {
+		stack.hurtAndBreak(1, entity, (p) -> {});
+	}
+	
+	/**
+	 * Playing the bounce sound.
+	 * 
+	 * @param world		The world.
+	 * @param entity	The entity using the ball.
+	 */
+	public void playBounceSound(World world, LivingEntity entity) {
+		float pitch = world.random.nextFloat() * (1.1f - 0.9f) + 0.9f;
+		world.playSound(null, entity.blockPosition(), getBounceSound(), SoundCategory.AMBIENT, 1, pitch);
+	}
+	
+	public SoundEvent getBounceSound() {
+		return BouncingBallsSounds.BOUNCE.get();
+	}
+	
 	protected boolean hasConsumptionItem(LivingEntity entity) {
 		if (properties.consumptionItem.getItem() == Items.AIR) {
 			return true;
@@ -171,19 +229,6 @@ public class BouncingBall extends Item implements IBouncingBall {
 			}
 		}
 		return -1;
-	}
-	
-	public void damageBall(LivingEntity entity, ItemStack stack) {
-		stack.hurtAndBreak(1, entity, (p) -> {});
-	}
-	
-	public void playBounceSound(World world, LivingEntity entity) {
-		float pitch = world.random.nextFloat() * (1.1f - 0.9f) + 0.9f;
-		world.playSound(null, entity.blockPosition(), getBounceSound(), SoundCategory.AMBIENT, 1, pitch);
-	}
-	
-	public SoundEvent getBounceSound() {
-		return BouncingBallsSounds.BOUNCE.get();
 	}
 	
 	public static class Properties {
