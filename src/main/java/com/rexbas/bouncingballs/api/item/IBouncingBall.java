@@ -12,5 +12,5 @@ public interface IBouncingBall {
 	public void bounce(LivingEntity entity, float motionY);
 	public float onFall(LivingEntity entity, ItemStack stack, float fallDistance);
 	public boolean onDamage(LivingEntity entity, DamageSource damageSource, float amount);
-	public void inLiquid(LivingEntity entity, ITag<Fluid> fluid);
+	public void inFluid(LivingEntity entity, ITag<Fluid> fluid);
 }

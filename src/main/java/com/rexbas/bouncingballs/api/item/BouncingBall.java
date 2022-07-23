@@ -60,11 +60,13 @@ public class BouncingBall extends Item implements IBouncingBall {
 	public boolean canBounce(LivingEntity entity) {
 		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
 		if (cap != null) {
-			// TODO has to get out of liquid first to reset consecutive bounces
-			if (properties.mustStartOnGroundOrLiquid && cap.getConsecutiveBounces() == 0) {
-				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && (cap.getTicksOnGround() > 0 || (cap.getTicksInLiquid() > 0 && entity.isInWater())) && !entity.isEyeInFluid(FluidTags.WATER) && !entity.isInLava() && hasConsumptionItem(entity);
+			if (properties.mustStartOnGroundOrFluid && cap.getConsecutiveBounces() == 0) {
+				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && (cap.getTicksOnGround() > 0 ||
+						(cap.getTicksInFluid() > 0 && entity.isInWater())) && !entity.isEyeInFluid(FluidTags.WATER) &&
+						!entity.isInLava() && hasConsumptionItem(entity);
 			}
-			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && !entity.isEyeInFluid(FluidTags.WATER) && !entity.isInLava() && hasConsumptionItem(entity);
+			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && !entity.isEyeInFluid(FluidTags.WATER) &&
+					!entity.isInLava() && hasConsumptionItem(entity);
 		}
 		return false;
 	}
@@ -73,8 +75,8 @@ public class BouncingBall extends Item implements IBouncingBall {
 	public boolean shouldSitOnBall(LivingEntity entity) {
 		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
 		if (cap != null) {
-			// TODO if it just came out of the water and not yet on ground
-			return (cap.getConsecutiveBounces() > 0 && !entity.isOnGround() || entity.isInWater()) && !entity.isSwimming();
+			return (cap.getConsecutiveBounces() > 0 && !entity.isOnGround() || (entity.isInWater()) && !entity.isSwimming()) ||
+					cap.getTicksSinceLastReset() < 5 || entity.fallDistance > 3 || cap.getLastFluid() == FluidTags.WATER;
 		}
 		return false;
 	}
@@ -133,8 +135,13 @@ public class BouncingBall extends Item implements IBouncingBall {
 	}
 	
 	@Override
-	public void inLiquid(LivingEntity entity, ITag<Fluid> fluid) {
+	public void inFluid(LivingEntity entity, ITag<Fluid> fluid) {
 		if (fluid == FluidTags.WATER) {
+			
+			entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
+				cap.setLastFluid(fluid);
+			});
+			
 			double d = 0.05 * entity.getFluidHeight(fluid) + 0.0075;
 			
 			if (entity.getDeltaMovement().y() < 0) {
@@ -188,18 +195,18 @@ public class BouncingBall extends Item implements IBouncingBall {
 		protected float rebounceHeight;
 		protected float damageMultiplier;
 		
-		protected boolean mustStartOnGroundOrLiquid;
+		protected boolean mustStartOnGroundOrFluid;
 		protected int maxConsecutiveBounces;
 		protected ItemStack consumptionItem;
 		
-		public Properties(int durability, Item repairItem, float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier, boolean mustStartOnGroundOrLiquid, int maxConsecutiveBounces, Item consumptionItem) {
+		public Properties(int durability, Item repairItem, float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier, boolean mustStartOnGroundOrFluid, int maxConsecutiveBounces, Item consumptionItem) {
 			this.durability = durability;
 			this.repairItem = repairItem;
 			this.forwardMotion = forwardMotion;
 			this.upwardMotion = upwardMotion;
 			this.rebounceHeight = rebounceHeight;
 			this.damageMultiplier = damageMultiplier;
-			this.mustStartOnGroundOrLiquid = mustStartOnGroundOrLiquid;
+			this.mustStartOnGroundOrFluid = mustStartOnGroundOrFluid;
 			this.maxConsecutiveBounces = maxConsecutiveBounces;
 			this.consumptionItem = new ItemStack(consumptionItem);
 		}

@@ -52,10 +52,10 @@ public class BouncingBallsAPIEvents {
 		}
 		
 		event.getEntityLiving().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
-			boolean inLiquid = event.getEntityLiving().level.containsAnyLiquid(event.getEntityLiving().getBoundingBox());
+			boolean inFluid = event.getEntityLiving().level.containsAnyLiquid(event.getEntityLiving().getBoundingBox());
 			if (cap.getConsecutiveBounces() > 0) {
-				if ((event.getEntityLiving().fallDistance == 0 && cap.getTicksOnGround() > 3) || cap.getTicksInLiquid() > 3) {
-					cap.resetConsecutiveBounces();
+				if ((event.getEntityLiving().fallDistance == 0 && cap.getTicksOnGround() > 3) || cap.getTicksInFluid() > 3) {
+					cap.resetConsecutiveBounces(0);
 				}
 			}
 			
@@ -66,12 +66,19 @@ public class BouncingBallsAPIEvents {
 				cap.resetTicksOnGround();
 			}
 			
-			if (inLiquid) {
-				cap.increaseTicksInLiquid();
+			if (inFluid) {
+				cap.increaseTicksInFluid();
 			}
 			else {
-				cap.resetTicksInLiquid();
+				cap.resetTicksInFluid();
 			}
+			
+			if (cap.getLastFluid() != null) {
+				if (event.getEntityLiving().isOnGround()) {
+					cap.setLastFluid(null);
+				}
+			}
+			cap.increaseTicksSinceLastReset();
 		});
 		
 		if (ball != null) {
@@ -80,7 +87,7 @@ public class BouncingBallsAPIEvents {
 			if (isAffectedByFluids && !event.getEntityLiving().isSwimming()) {
 				for (ITag<Fluid> fluid : FluidTags.getWrappers()) {
 					if (event.getEntityLiving().getFluidHeight(fluid) > 0) {
-						ball.inLiquid(event.getEntityLiving(), fluid);
+						ball.inFluid(event.getEntityLiving(), fluid);
 						break;
 					}
 				}
@@ -94,7 +101,7 @@ public class BouncingBallsAPIEvents {
 	@SubscribeEvent
 	public static void onCreativePlayerFall(PlayerFlyableFallEvent event) {
 		event.getPlayer().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
-			cap.resetConsecutiveBounces();
+			cap.resetConsecutiveBounces(event.getDistance());
 		});
 		
 		if (event.getPlayer().getOffhandItem().getItem() instanceof IBouncingBall) {
@@ -112,7 +119,7 @@ public class BouncingBallsAPIEvents {
 	@SubscribeEvent
 	public static void onLivingFall(LivingFallEvent event) {
 		event.getEntityLiving().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
-			cap.resetConsecutiveBounces();
+			cap.resetConsecutiveBounces(event.getDistance());
 		});
 		
 		float multiplier = 1;
