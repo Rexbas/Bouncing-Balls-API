@@ -12,7 +12,6 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
@@ -69,7 +68,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 		if (cap != null) {
 			if (properties.mustStartOnGroundOrFluid && cap.getConsecutiveBounces() == 0) {
 				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && 
-						(cap.getTicksOnGround() > 0 ||
+						(cap.getTicksOnGround() > 0 && !entity.level.containsAnyLiquid(entity.getBoundingBox()) ||
 								(cap.getTicksInFluid() > 0 && cap.getLastFluid() != null &&
 								properties.fluidList.contains(cap.getLastFluid()) &&
 								!entity.isEyeInFluid(cap.getLastFluid()))) &&
@@ -95,8 +94,9 @@ public class BouncingBall extends Item implements IBouncingBall {
 	public boolean shouldSitOnBall(LivingEntity entity) {
 		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
 		if (cap != null) {
-			return (cap.getConsecutiveBounces() > 0 && !entity.isOnGround() || (entity.isInWater()) && !entity.isSwimming()) ||
-					cap.getTicksSinceLastReset() < 5 || entity.fallDistance > 3 || cap.getLastFluid() == FluidTags.WATER;
+			return cap.getConsecutiveBounces() > 0 && !entity.isOnGround() ||
+					cap.getTicksSinceLastReset() < 5 || entity.fallDistance > 3 || 
+					(properties.fluidList.contains(cap.getLastFluid()) && !entity.isSwimming());
 		}
 		return false;
 	}
