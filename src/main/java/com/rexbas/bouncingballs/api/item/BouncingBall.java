@@ -1,17 +1,20 @@
 package com.rexbas.bouncingballs.api.item;
 
 import java.util.HashSet;
+import java.util.List;
 
 import com.rexbas.bouncingballs.api.BouncingBallsAPI.BouncingBallsSounds;
 import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
@@ -20,6 +23,10 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.Color;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -214,8 +221,29 @@ public class BouncingBall extends Item implements IBouncingBall {
 		world.playSound(null, entity.blockPosition(), getBounceSound(), SoundCategory.AMBIENT, 1, pitch);
 	}
 	
+	@Override
+	public void appendHoverText(ItemStack stack, World world, List<ITextComponent> list, ITooltipFlag flag) {
+		for (ITag<Fluid> fluid : properties.fluidList) {
+			if (fluid == FluidTags.WATER) {
+				list.add(new TranslationTextComponent("bouncingballs_api.hovertext.water_floating").setStyle(Style.EMPTY.withColor(Color.fromRgb(0x0099FF))));
+			}
+			else if (fluid == FluidTags.LAVA) {
+				list.add(new TranslationTextComponent("bouncingballs_api.hovertext.lava_floating").setStyle(Style.EMPTY.withColor(Color.fromRgb(0xFF9900))));
+			}
+		}
+		if (properties.consumptionItem.getItem() != Items.AIR) {
+			list.add(new TranslationTextComponent("bouncingballs_api.hovertext.consumes").setStyle(Style.EMPTY.withColor(Color.fromRgb(0xAAAAAA)))
+					.append(" ")
+					.append(properties.consumptionItem.getHoverName()));
+		}
+    }
+	
 	public SoundEvent getBounceSound() {
 		return BouncingBallsSounds.BOUNCE.get();
+	}
+	
+	public Item getRecipeItem() {
+		return this.properties.recipeItem;
 	}
 	
 	protected boolean hasConsumptionItem(LivingEntity entity) {
@@ -252,6 +280,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 		public int maxConsecutiveBounces;
 		public ItemStack consumptionItem;
 		public HashSet<ITag<Fluid>> fluidList;
+		public Item recipeItem;
 		
 		public Properties(int durability, Item repairItem, float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier, boolean mustStartOnGroundOrFluid, int maxConsecutiveBounces, Item consumptionItem) {
 			this.durability = durability;
@@ -264,6 +293,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 			this.maxConsecutiveBounces = maxConsecutiveBounces;
 			this.consumptionItem = new ItemStack(consumptionItem);
 			this.fluidList = new HashSet<ITag<Fluid>>();
+			this.recipeItem = Items.AIR;
 		}
 		
 		public Properties(int durability, Item repairItem, float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier) {
@@ -283,7 +313,12 @@ public class BouncingBall extends Item implements IBouncingBall {
 		}
 		
 		public Properties addFluid(ITag<Fluid> fluid) {
-			fluidList.add(fluid);
+			this.fluidList.add(fluid);
+			return this;
+		}
+		
+		public Properties recipeItem(Item recipeItem) {
+			this.recipeItem = recipeItem;
 			return this;
 		}
 	}
