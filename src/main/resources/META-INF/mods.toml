@@ -8,7 +8,7 @@ modId="bouncingballs_api"
 version="${file.jarVersion}"
 displayName="Bouncing Balls API"
 updateJSONURL="https://raw.githubusercontent.com/Rexbas/Bouncing-Balls-API/update/update.json"
-displayURL="https://www.curseforge.com/minecraft/mc-mods/bouncing-balls"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/bouncing-balls-api"
 authors="Rexbas"
 description='''
 Bouncing Balls API.

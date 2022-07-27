@@ -20,7 +20,6 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.Color;
@@ -218,7 +217,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 */
 	public void playBounceSound(World world, LivingEntity entity) {
 		float pitch = world.random.nextFloat() * (1.1f - 0.9f) + 0.9f;
-		world.playSound(null, entity.blockPosition(), getBounceSound(), SoundCategory.AMBIENT, 1, pitch);
+		entity.playSound(getBounceSound(), 1, pitch);
 	}
 	
 	@Override
