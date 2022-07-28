@@ -14,6 +14,8 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -142,7 +144,8 @@ public class BouncingBallsAPIEvents {
 			event.setCanceled(((IBouncingBall) event.getEntityLiving().getMainHandItem().getItem()).onDamage(event.getEntityLiving(), event.getSource(), event.getAmount()));
 		}
 	}
-		
+	
+	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public static void onPlayerRender(RenderPlayerEvent.Pre event) {
 		IBouncingBall ball = null;

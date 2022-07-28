@@ -41,7 +41,6 @@ public class BouncingBallsAPI {
 		}, BounceCapability::new);
 	}
     
-    
     @Mod.EventBusSubscriber(modid = BouncingBallsAPI.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class BouncingBallsSounds {
     	public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, BouncingBallsAPI.MODID);
