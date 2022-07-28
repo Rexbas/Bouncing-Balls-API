@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import com.rexbas.bouncingballs.api.BouncingBallsAPI.BouncingBallsSounds;
-import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
+import com.rexbas.bouncingballs.api.capability.BounceCapability;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 
 import net.minecraft.client.util.ITooltipFlag;
@@ -20,6 +20,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.Color;
@@ -47,8 +48,8 @@ public class BouncingBall extends Item implements IBouncingBall {
     	if (hand == Hand.MAIN_HAND && player.getOffhandItem().getItem() instanceof IBouncingBall) {
     		return new ActionResult<ItemStack>(ActionResultType.FAIL, stack);
     	}
-    	
-    	if (canBounce(player)) {
+
+    	if (!player.level.isClientSide() && canBounce(player)) {
     		bounce(player, properties.upwardMotion);
     		damageBall(player, stack);
 			playBounceSound(world, player);
@@ -70,7 +71,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 */
 	@Override
 	public boolean canBounce(LivingEntity entity) {
-		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
+		IBounceCapability cap = entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).orElse(null);
 		if (cap != null) {
 			if (properties.mustStartOnGroundOrFluid && cap.getConsecutiveBounces() == 0) {
 				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && 
@@ -98,10 +99,10 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 */
 	@Override
 	public boolean shouldSitOnBall(LivingEntity entity) {
-		IBounceCapability cap = entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).orElse(null);
+		IBounceCapability cap = entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).orElse(null);
 		if (cap != null) {
 			return cap.getConsecutiveBounces() > 0 && !entity.isOnGround() ||
-					cap.getTicksSinceLastReset() < 5 || entity.fallDistance > 3 || 
+					cap.getTicksSinceLastReset() < 7 || entity.fallDistance > 3 || 
 					(properties.fluidList.contains(cap.getLastFluid()) && !entity.isSwimming());
 		}
 		return false;
@@ -121,8 +122,9 @@ public class BouncingBall extends Item implements IBouncingBall {
 		double motionZ = (double)(MathHelper.cos(yaw / 180.0F * (float)Math.PI) * MathHelper.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
 		
 		entity.push(motionX, motionY, motionZ);
+		entity.hurtMarked = true;
 		
-		entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
+		entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
 			cap.addBounce();
 		});
 		
@@ -146,19 +148,22 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 */
 	@Override
 	public float onFall(LivingEntity entity, ItemStack stack, float fallDistance) {
-		if (fallDistance > properties.rebounceHeight) {
-			float multiplier;
-			if (hasConsumptionItem(entity)) {
-				bounce(entity, properties.upwardMotion);
-				multiplier = properties.damageMultiplier;
-			} else {
-				bounce(entity, properties.upwardMotion / 2);
-				multiplier = properties.damageMultiplier * 2 > 1 ? 1 : properties.damageMultiplier * 2;
+		if (!entity.level.isClientSide()) {
+			if (fallDistance > properties.rebounceHeight) {
+				float multiplier;
+				if (hasConsumptionItem(entity)) {
+					bounce(entity, properties.upwardMotion);
+					multiplier = properties.damageMultiplier;
+				} else {
+					bounce(entity, properties.upwardMotion / 2);
+					multiplier = properties.damageMultiplier * 2 > 1 ? 1 : properties.damageMultiplier * 2;
+				}
+				entity.hurtMarked = true;
+		
+				damageBall(entity, stack);
+				playBounceSound(entity.level, entity);
+				return multiplier;
 			}
-
-			damageBall(entity, stack);
-			playBounceSound(entity.level, entity);
-			return multiplier;
 		}
 		return 0f;
 	}
@@ -186,16 +191,24 @@ public class BouncingBall extends Item implements IBouncingBall {
 	public void inFluid(LivingEntity entity, ITag<Fluid> fluid) {
 		if (properties.fluidList.contains(fluid)) {
 			
-			entity.getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
+			entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
 				cap.setLastFluid(fluid);
 			});
 			
-			double d = 0.05 * entity.getFluidHeight(fluid) + 0.0075;
-			
-			if (entity.getDeltaMovement().y() < 0) {
-				d += -0.6 * entity.getDeltaMovement().y();	
+			if (!entity.level.isClientSide()) {
+				double d = 0.1 * entity.getFluidHeight(fluid) + 0.0175;
+				
+				if (entity.getDeltaMovement().y() < 0 && entity.getFluidHeight(fluid) > 0) {
+					d += -0.98 * entity.getDeltaMovement().y();	
+				}
+				
+				if (fluid == FluidTags.LAVA) {
+					d *= 1.5;
+				}
+				
+				entity.setDeltaMovement(entity.getDeltaMovement().add(0.0D, entity.getAttribute(ForgeMod.SWIM_SPEED.get()).getValue() * d, 0.0D));
+				entity.hurtMarked = true;
 			}
-			entity.setDeltaMovement(entity.getDeltaMovement().add(0.0D, entity.getAttribute(ForgeMod.SWIM_SPEED.get()).getValue() * d, 0.0D));
 		}
 	}
 	
@@ -217,7 +230,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 */
 	public void playBounceSound(World world, LivingEntity entity) {
 		float pitch = world.random.nextFloat() * (1.1f - 0.9f) + 0.9f;
-		entity.playSound(getBounceSound(), 1, pitch);
+		world.playSound(null, entity, getBounceSound(), SoundCategory.PLAYERS, 1, pitch);
 	}
 	
 	@Override

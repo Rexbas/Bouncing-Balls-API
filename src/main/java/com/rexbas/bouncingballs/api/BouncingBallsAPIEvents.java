@@ -2,9 +2,11 @@ package com.rexbas.bouncingballs.api;
 
 import java.lang.reflect.Method;
 
-import com.rexbas.bouncingballs.api.capability.BounceCapabilityProvider;
+import com.rexbas.bouncingballs.api.capability.BounceCapability;
 import com.rexbas.bouncingballs.api.client.renderer.PlayerSitRenderer;
 import com.rexbas.bouncingballs.api.item.IBouncingBall;
+import com.rexbas.bouncingballs.api.network.BouncingBallsAPINetwork;
+import com.rexbas.bouncingballs.api.network.packet.SUpdateBounceCapabilityPacket;
 
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -25,6 +27,7 @@ import net.minecraftforge.event.entity.player.PlayerFlyableFallEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 @Mod.EventBusSubscriber(modid = BouncingBallsAPI.MODID)
 public class BouncingBallsAPIEvents {
@@ -32,7 +35,7 @@ public class BouncingBallsAPIEvents {
 	@SubscribeEvent
 	public static void attachtCapability(AttachCapabilitiesEvent<Entity> event) {	
 		if (event.getObject() instanceof PlayerEntity) {
-			event.addCapability(new ResourceLocation(BouncingBallsAPI.MODID, "capability.bounce"), new BounceCapabilityProvider());
+			event.addCapability(new ResourceLocation(BouncingBallsAPI.MODID, "capability.bounce"), new BounceCapability());
 		}
 	}
 	
@@ -52,8 +55,8 @@ public class BouncingBallsAPIEvents {
 		else {
 			ball = null;
 		}
-		
-		event.getEntityLiving().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
+
+		event.getEntityLiving().getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
 			boolean inFluid = event.getEntityLiving().level.containsAnyLiquid(event.getEntityLiving().getBoundingBox());
 			if (cap.getConsecutiveBounces() > 0) {
 				if ((event.getEntityLiving().fallDistance == 0 && cap.getTicksOnGround() > 3) || cap.getTicksInFluid() > 3) {
@@ -95,6 +98,15 @@ public class BouncingBallsAPIEvents {
 				}
 			}
 		}
+		
+		event.getEntityLiving().getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
+			if (cap.getMarkedForUpdate()) {
+				if (!event.getEntityLiving().level.isClientSide()) {
+					BouncingBallsAPINetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> event.getEntityLiving()), new SUpdateBounceCapabilityPacket(event.getEntityLiving().getId(), cap.serializeNBT()));
+				}
+				cap.setMarkedForUpdate(false);
+			}
+		});
 	}
 
 	/**
@@ -102,7 +114,7 @@ public class BouncingBallsAPIEvents {
 	 */
 	@SubscribeEvent
 	public static void onCreativePlayerFall(PlayerFlyableFallEvent event) {
-		event.getPlayer().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
+		event.getPlayer().getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
 			cap.resetConsecutiveBounces(event.getDistance());
 		});
 		
@@ -112,7 +124,6 @@ public class BouncingBallsAPIEvents {
 		else if (event.getPlayer().getMainHandItem().getItem() instanceof IBouncingBall) {
 			((IBouncingBall) event.getPlayer().getMainHandItem().getItem()).onFall(event.getPlayer(), event.getPlayer().getMainHandItem(), event.getDistance());
 		}
-		event.getPlayer().hurtMarked = true;
 	}
 	
 	/**
@@ -120,7 +131,7 @@ public class BouncingBallsAPIEvents {
 	 */
 	@SubscribeEvent
 	public static void onLivingFall(LivingFallEvent event) {
-		event.getEntityLiving().getCapability(BounceCapabilityProvider.BOUNCE_CAPABILITY).ifPresent(cap -> {
+		event.getEntityLiving().getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
 			cap.resetConsecutiveBounces(event.getDistance());
 		});
 		
@@ -132,7 +143,6 @@ public class BouncingBallsAPIEvents {
 			multiplier = ((IBouncingBall) event.getEntityLiving().getMainHandItem().getItem()).onFall(event.getEntityLiving(), event.getEntityLiving().getMainHandItem(), event.getDistance());
 		}
 		event.setDamageMultiplier(multiplier);
-		event.getEntityLiving().hurtMarked = true;
 	}
 	
 	@SubscribeEvent

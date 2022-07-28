@@ -2,13 +2,10 @@ package com.rexbas.bouncingballs.api;
 
 import com.rexbas.bouncingballs.api.capability.BounceCapability;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
+import com.rexbas.bouncingballs.api.network.BouncingBallsAPINetwork;
 
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.Capability.IStorage;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
@@ -27,18 +24,10 @@ public class BouncingBallsAPI {
 		BouncingBallsSounds.SOUNDS.register(FMLJavaModLoadingContext.get().getModEventBus());
 	}
 	
-    public void setup(final FMLCommonSetupEvent event) {    	
-    	CapabilityManager.INSTANCE.register(IBounceCapability.class, new IStorage<IBounceCapability>() {
-
-			@Override
-			public INBT writeNBT(Capability<IBounceCapability> capability, IBounceCapability instance, Direction side) {
-				return null;
-			}
-
-			@Override
-			public void readNBT(Capability<IBounceCapability> capability, IBounceCapability instance, Direction side, INBT nbt) {}
-			
-		}, BounceCapability::new);
+    public void setup(final FMLCommonSetupEvent event) {  
+    	BouncingBallsAPINetwork.init();
+    	
+    	CapabilityManager.INSTANCE.register(IBounceCapability.class, new BounceCapability.Storage(), BounceCapability::new);
 	}
     
     @Mod.EventBusSubscriber(modid = BouncingBallsAPI.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
