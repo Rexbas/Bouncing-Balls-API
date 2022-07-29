@@ -10,13 +10,12 @@ import com.rexbas.bouncingballs.api.network.BouncingBallsAPINetwork;
 import com.rexbas.bouncingballs.api.network.packet.SUpdateBounceCapabilityPacket;
 
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderPlayerEvent;
@@ -29,7 +28,7 @@ import net.minecraftforge.event.entity.player.PlayerFlyableFallEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.fmllegacy.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 
 @Mod.EventBusSubscriber(modid = BouncingBallsAPI.MODID)
 public class BouncingBallsAPIEvents {
@@ -97,12 +96,12 @@ public class BouncingBallsAPIEvents {
 			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "m_6129_"); // isAffectedByFluids()
 			boolean isAffectedByFluids = (boolean) m.invoke(event.getEntityLiving());
 			if (isAffectedByFluids && !event.getEntityLiving().isSwimming()) {
-				for (Tag<Fluid> fluid : FluidTags.getStaticTags()) {
-					if (event.getEntityLiving().getFluidHeight(fluid) > 0) {
+			    FluidState fluidstate = event.getEntityLiving().level.getFluidState(new BlockPos(event.getEntityLiving().getX(), event.getEntityLiving().getY(), event.getEntityLiving().getZ()));
+			    fluidstate.getTags().forEach((fluid) -> {
+			    	if (event.getEntityLiving().getFluidHeight(fluid) > 0) {
 						ball.inFluid(event.getEntityLiving(), fluid);
-						break;
 					}
-				}
+			    });
 			}
 		}
 		
@@ -177,7 +176,7 @@ public class BouncingBallsAPIEvents {
 			event.setCanceled(true);
 			
 			PlayerSitRenderer sitRenderer = new PlayerSitRenderer(event.getRenderer(), (AbstractClientPlayer) event.getPlayer());
-			sitRenderer.render((AbstractClientPlayer) event.getPlayer(), 0, event.getPartialRenderTick(), event.getMatrixStack(), event.getBuffers(), event.getLight());
+			sitRenderer.render((AbstractClientPlayer) event.getPlayer(), 0, event.getPartialTick(), event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
 		}
 	}
 }

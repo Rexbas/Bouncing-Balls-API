@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -24,7 +24,7 @@ public class BounceCapability implements ICapabilityProvider, IBounceCapability 
 	private int ticksSinceLastReset;
 	private int ticksOnGround;
 	private int ticksInFluid;
-	private Tag<Fluid> lastFluid;
+	private TagKey<Fluid> lastFluid;
 	
 	private boolean markedForUpdate;
 		
@@ -106,7 +106,7 @@ public class BounceCapability implements ICapabilityProvider, IBounceCapability 
 	}
 	
 	@Override
-	public void setLastFluid(Tag<Fluid> fluid) {
+	public void setLastFluid(TagKey<Fluid> fluid) {
 		this.lastFluid = fluid;
 	}
 	
@@ -115,7 +115,7 @@ public class BounceCapability implements ICapabilityProvider, IBounceCapability 
 	 */
 	@Override
 	@Nullable
-	public Tag<Fluid> getLastFluid() {
+	public TagKey<Fluid> getLastFluid() {
 		return this.lastFluid;
 	}
 	

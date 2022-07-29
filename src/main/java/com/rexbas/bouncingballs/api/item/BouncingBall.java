@@ -14,7 +14,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -191,7 +191,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 * @param fluid		The fluid.
 	 */
 	@Override
-	public void inFluid(LivingEntity entity, Tag<Fluid> fluid) {
+	public void inFluid(LivingEntity entity, TagKey<Fluid> fluid) {
 		if (properties.fluidList.contains(fluid)) {
 			
 			entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
@@ -238,7 +238,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	
 	@Override
 	public void appendHoverText(ItemStack stack, Level level, List<Component> list, TooltipFlag flag) {
-		for (Tag<Fluid> fluid : properties.fluidList) {
+		for (TagKey<Fluid> fluid : properties.fluidList) {
 			if (fluid == FluidTags.WATER) {
 				list.add(new TranslatableComponent("bouncingballs_api.hovertext.water_floating").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x0099FF))));
 			}
@@ -294,7 +294,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 		public boolean mustStartOnGroundOrFluid;
 		public int maxConsecutiveBounces;
 		public ItemStack consumptionItem;
-		public HashSet<Tag<Fluid>> fluidList;
+		public HashSet<TagKey<Fluid>> fluidList;
 		public Item recipeItem;
 		
 		public Properties(int durability, Item repairItem, float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier, boolean mustStartOnGroundOrFluid, int maxConsecutiveBounces, Item consumptionItem) {
@@ -307,7 +307,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 			this.mustStartOnGroundOrFluid = mustStartOnGroundOrFluid;
 			this.maxConsecutiveBounces = maxConsecutiveBounces;
 			this.consumptionItem = new ItemStack(consumptionItem);
-			this.fluidList = new HashSet<Tag<Fluid>>();
+			this.fluidList = new HashSet<TagKey<Fluid>>();
 			this.recipeItem = Items.AIR;
 		}
 		
@@ -327,7 +327,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 			this(100, Items.SLIME_BALL, 0.5f, 0.65f, 10f, 0.5f, true, 1, Items.AIR);
 		}
 		
-		public Properties addFluid(Tag<Fluid> fluid) {
+		public Properties addFluid(TagKey<Fluid> fluid) {
 			this.fluidList.add(fluid);
 			return this;
 		}

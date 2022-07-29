@@ -1,6 +1,6 @@
 package com.rexbas.bouncingballs.api.item;
 
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -12,5 +12,5 @@ public interface IBouncingBall {
 	public void bounce(LivingEntity entity, float motionY);
 	public float onFall(LivingEntity entity, ItemStack stack, float fallDistance);
 	public boolean onDamage(LivingEntity entity, DamageSource damageSource, float amount);
-	public void inFluid(LivingEntity entity, Tag<Fluid> fluid);
+	public void inFluid(LivingEntity entity, TagKey<Fluid> fluid);
 }
