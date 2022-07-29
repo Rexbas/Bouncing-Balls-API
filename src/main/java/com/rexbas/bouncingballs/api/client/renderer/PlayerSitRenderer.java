@@ -1,44 +1,51 @@
 package com.rexbas.bouncingballs.api.client.renderer;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Vector3f;
 
-import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.LivingRenderer;
-import net.minecraft.client.renderer.entity.PlayerRenderer;
-import net.minecraft.client.renderer.entity.model.BipedModel;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerModelPart;
-import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.util.Hand;
-import net.minecraft.util.HandSide;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.Scoreboard;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public class PlayerSitRenderer extends SitRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> {
+public class PlayerSitRenderer extends SitRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 	
 	// Based on PlayerRenderer
-	public PlayerSitRenderer(LivingRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> livingRenderer, AbstractClientPlayerEntity entity) {
+	public PlayerSitRenderer(LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> livingRenderer, AbstractClientPlayer entity) {
 		super(livingRenderer, entity);
+		for (RenderLayer<?, ?> layerrenderer : livingRenderer.layers) {
+			if (layerrenderer instanceof PlayerItemInHandLayer) {
+				// Replace the PlayerItemInHandLayer with the BouncingBallPlayerItemInHandLayer
+				this.layers.add(new BouncingBallPlayerItemInHandLayer<>(this));
+			}
+		}
 	}
-	
+
 	@Override
-	public void render(AbstractClientPlayerEntity entity, float unknownUnused, float partialRenderTick, MatrixStack matrixStack, IRenderTypeBuffer buffers, int light) {
+	public void render(AbstractClientPlayer entity, float unknownUnused, float partialRenderTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
 		this.setModelProperties(entity);
-		super.render(entity, unknownUnused, partialRenderTick, matrixStack, buffers, light);
+		super.render(entity, unknownUnused, partialRenderTick, poseStack, buffers, light);
 	}
 	
-	private void setModelProperties(AbstractClientPlayerEntity entity) {
-		PlayerModel<AbstractClientPlayerEntity> playermodel = this.getModel();
+	private void setModelProperties(AbstractClientPlayer entity) {
+		PlayerModel<AbstractClientPlayer> playermodel = this.getModel();
 		if (entity.isSpectator()) {
 			playermodel.setAllVisible(false);
 			playermodel.head.visible = true;
@@ -52,13 +59,13 @@ public class PlayerSitRenderer extends SitRenderer<AbstractClientPlayerEntity, P
 			playermodel.leftSleeve.visible = entity.isModelPartShown(PlayerModelPart.LEFT_SLEEVE);
 			playermodel.rightSleeve.visible = entity.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE);
 			playermodel.crouching = entity.isCrouching();
-			BipedModel.ArmPose bipedmodel$armpose = PlayerRenderer.getArmPose(entity, Hand.MAIN_HAND);
-			BipedModel.ArmPose bipedmodel$armpose1 = PlayerRenderer.getArmPose(entity, Hand.OFF_HAND);
+			HumanoidModel.ArmPose bipedmodel$armpose = PlayerRenderer.getArmPose(entity, InteractionHand.MAIN_HAND);
+			HumanoidModel.ArmPose bipedmodel$armpose1 = PlayerRenderer.getArmPose(entity, InteractionHand.OFF_HAND);
 			if (bipedmodel$armpose.isTwoHanded()) {
-				bipedmodel$armpose1 = entity.getOffhandItem().isEmpty() ? BipedModel.ArmPose.EMPTY : BipedModel.ArmPose.ITEM;
+				bipedmodel$armpose1 = entity.getOffhandItem().isEmpty() ? HumanoidModel.ArmPose.EMPTY : HumanoidModel.ArmPose.ITEM;
 			}
 
-			if (entity.getMainArm() == HandSide.RIGHT) {
+			if (entity.getMainArm() == HumanoidArm.RIGHT) {
 				playermodel.rightArmPose = bipedmodel$armpose;
 				playermodel.leftArmPose = bipedmodel$armpose1;
 			} else {
@@ -69,58 +76,58 @@ public class PlayerSitRenderer extends SitRenderer<AbstractClientPlayerEntity, P
 	}
 	
 	@Override
-	protected void scale(AbstractClientPlayerEntity entity, MatrixStack matrixStack, float partialRenderTick) {
-		matrixStack.scale(0.9375F, 0.9375F, 0.9375F);
+	protected void scale(AbstractClientPlayer entity, PoseStack poseStack, float partialRenderTick) {
+		poseStack.scale(0.9375F, 0.9375F, 0.9375F);
 	}
 
 	@Override
-	protected void renderNameTag(AbstractClientPlayerEntity entity, ITextComponent textComponent, MatrixStack matrixStack, IRenderTypeBuffer buffers, int light) {
+	protected void renderNameTag(AbstractClientPlayer entity, Component textComponent, PoseStack poseStack, MultiBufferSource buffers, int light) {
 		double d0 = this.entityRenderDispatcher.distanceToSqr(entity);
-		matrixStack.pushPose();
+		poseStack.pushPose();
 		if (d0 < 100.0D) {
 			Scoreboard scoreboard = entity.getScoreboard();
-			ScoreObjective scoreobjective = scoreboard.getDisplayObjective(2);
-			if (scoreobjective != null) {
-				Score score = scoreboard.getOrCreatePlayerScore(entity.getScoreboardName(), scoreobjective);
-				super.renderNameTag(entity, (new StringTextComponent(Integer.toString(score.getScore()))).append(" ").append(scoreobjective.getDisplayName()), matrixStack, buffers, light);
-				matrixStack.translate(0.0D, (double) (9.0F * 1.15F * 0.025F), 0.0D);
+			Objective objective = scoreboard.getDisplayObjective(2);
+			if (objective != null) {
+				Score score = scoreboard.getOrCreatePlayerScore(entity.getScoreboardName(), objective);
+				super.renderNameTag(entity, (new TextComponent(Integer.toString(score.getScore()))).append(" ").append(objective.getDisplayName()), poseStack, buffers, light);
+				poseStack.translate(0.0D, (double) (9.0F * 1.15F * 0.025F), 0.0D);
 			}
 		}
 
-		super.renderNameTag(entity, textComponent, matrixStack, buffers, light);
-		matrixStack.popPose();
+		super.renderNameTag(entity, textComponent, poseStack, buffers, light);
+		poseStack.popPose();
 	}
 
 	@Override
-	protected void setupRotations(AbstractClientPlayerEntity entity, MatrixStack matrixStack, float p_225621_3_, float p_225621_4_, float p_225621_5_) {
-		float f = entity.getSwimAmount(p_225621_5_);
+	protected void setupRotations(AbstractClientPlayer entity, PoseStack poseStack, float p_117804_, float p_117805_, float p_117806_) {
+		float f = entity.getSwimAmount(p_117806_);
 		if (entity.isFallFlying()) {
-			super.setupRotations(entity, matrixStack, p_225621_3_, p_225621_4_, p_225621_5_);
-			float f1 = (float) entity.getFallFlyingTicks() + p_225621_5_;
-			float f2 = MathHelper.clamp(f1 * f1 / 100.0F, 0.0F, 1.0F);
+			super.setupRotations(entity, poseStack, p_117804_, p_117805_, p_117806_);
+			float f1 = (float) entity.getFallFlyingTicks() + p_117806_;
+			float f2 = Mth.clamp(f1 * f1 / 100.0F, 0.0F, 1.0F);
 			if (!entity.isAutoSpinAttack()) {
-				matrixStack.mulPose(Vector3f.XP.rotationDegrees(f2 * (-90.0F - entity.xRot)));
+				poseStack.mulPose(Vector3f.XP.rotationDegrees(f2 * (-90.0F - entity.getXRot())));
 			}
 
-			Vector3d vector3d = entity.getViewVector(p_225621_5_);
-			Vector3d vector3d1 = entity.getDeltaMovement();
-			double d0 = Entity.getHorizontalDistanceSqr(vector3d1);
-			double d1 = Entity.getHorizontalDistanceSqr(vector3d);
+			Vec3 vec3 = entity.getViewVector(p_117806_);
+			Vec3 vec31 = entity.getDeltaMovement();
+			double d0 = vec31.horizontalDistanceSqr();
+			double d1 = vec3.horizontalDistanceSqr();
 			if (d0 > 0.0D && d1 > 0.0D) {
-				double d2 = (vector3d1.x * vector3d.x + vector3d1.z * vector3d.z) / Math.sqrt(d0 * d1);
-				double d3 = vector3d1.x * vector3d.z - vector3d1.z * vector3d.x;
-				matrixStack.mulPose(Vector3f.YP.rotation((float) (Math.signum(d3) * Math.acos(d2))));
+				double d2 = (vec31.x * vec3.x + vec31.z * vec3.z) / Math.sqrt(d0 * d1);
+				double d3 = vec31.x * vec3.z - vec31.z * vec3.x;
+				poseStack.mulPose(Vector3f.YP.rotation((float) (Math.signum(d3) * Math.acos(d2))));
 			}
 		} else if (f > 0.0F) {
-			super.setupRotations(entity, matrixStack, p_225621_3_, p_225621_4_, p_225621_5_);
-			float f3 = entity.isInWater() ? -90.0F - entity.xRot : -90.0F;
-			float f4 = MathHelper.lerp(f, 0.0F, f3);
-			matrixStack.mulPose(Vector3f.XP.rotationDegrees(f4));
+			super.setupRotations(entity, poseStack, p_117804_, p_117805_, p_117806_);
+			float f3 = entity.isInWater() ? -90.0F - entity.getXRot() : -90.0F;
+			float f4 = Mth.lerp(f, 0.0F, f3);
+			poseStack.mulPose(Vector3f.XP.rotationDegrees(f4));
 			if (entity.isVisuallySwimming()) {
-				matrixStack.translate(0.0D, -1.0D, (double) 0.3F);
+				poseStack.translate(0.0D, -1.0D, (double) 0.3F);
 			}
 		} else {
-			super.setupRotations(entity, matrixStack, p_225621_3_, p_225621_4_, p_225621_5_);
+			super.setupRotations(entity, poseStack, p_117804_, p_117805_, p_117806_);
 		}
 	}
 }

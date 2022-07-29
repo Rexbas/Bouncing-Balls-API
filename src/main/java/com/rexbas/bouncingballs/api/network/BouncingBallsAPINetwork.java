@@ -3,9 +3,9 @@ package com.rexbas.bouncingballs.api.network;
 import com.rexbas.bouncingballs.api.BouncingBallsAPI;
 import com.rexbas.bouncingballs.api.network.packet.SUpdateBounceCapabilityPacket;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fmllegacy.network.NetworkRegistry;
+import net.minecraftforge.fmllegacy.network.simple.SimpleChannel;
 
 public class BouncingBallsAPINetwork {
 

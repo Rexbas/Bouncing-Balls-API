@@ -3,11 +3,11 @@ package com.rexbas.bouncingballs.test.init;
 import com.rexbas.bouncingballs.api.item.BouncingBall;
 import com.rexbas.bouncingballs.test.BouncingBallsTest;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 import net.minecraft.tags.FluidTags;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 

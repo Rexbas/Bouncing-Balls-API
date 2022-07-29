@@ -3,22 +3,24 @@ package com.rexbas.bouncingballs.api;
 import java.lang.reflect.Method;
 
 import com.rexbas.bouncingballs.api.capability.BounceCapability;
+import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 import com.rexbas.bouncingballs.api.client.renderer.PlayerSitRenderer;
 import com.rexbas.bouncingballs.api.item.IBouncingBall;
 import com.rexbas.bouncingballs.api.network.BouncingBallsAPINetwork;
 import com.rexbas.bouncingballs.api.network.packet.SUpdateBounceCapabilityPacket;
 
-import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -26,15 +28,20 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.PlayerFlyableFallEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
 
 @Mod.EventBusSubscriber(modid = BouncingBallsAPI.MODID)
 public class BouncingBallsAPIEvents {
 	
 	@SubscribeEvent
+	public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
+		event.register(IBounceCapability.class);
+	}
+	
+	@SubscribeEvent
 	public static void attachtCapability(AttachCapabilitiesEvent<Entity> event) {	
-		if (event.getObject() instanceof PlayerEntity) {
+		if (event.getObject() instanceof Player) {
 			event.addCapability(new ResourceLocation(BouncingBallsAPI.MODID, "capability.bounce"), new BounceCapability());
 		}
 	}
@@ -87,10 +94,10 @@ public class BouncingBallsAPIEvents {
 		});
 		
 		if (ball != null) {
-			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "func_241208_cS_"); // isAffectedByFluids()
+			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "m_6129_"); // isAffectedByFluids()
 			boolean isAffectedByFluids = (boolean) m.invoke(event.getEntityLiving());
 			if (isAffectedByFluids && !event.getEntityLiving().isSwimming()) {
-				for (ITag<Fluid> fluid : FluidTags.getWrappers()) {
+				for (Tag<Fluid> fluid : FluidTags.getStaticTags()) {
 					if (event.getEntityLiving().getFluidHeight(fluid) > 0) {
 						ball.inFluid(event.getEntityLiving(), fluid);
 						break;
@@ -168,9 +175,9 @@ public class BouncingBallsAPIEvents {
 		
 		if (ball != null && ball.shouldSitOnBall(event.getPlayer())) {
 			event.setCanceled(true);
-
-			PlayerSitRenderer sitRenderer = new PlayerSitRenderer(event.getRenderer(), (AbstractClientPlayerEntity) event.getPlayer());
-			sitRenderer.render((AbstractClientPlayerEntity) event.getPlayer(), 0, event.getPartialRenderTick(), event.getMatrixStack(), event.getBuffers(), event.getLight());
+			
+			PlayerSitRenderer sitRenderer = new PlayerSitRenderer(event.getRenderer(), (AbstractClientPlayer) event.getPlayer());
+			sitRenderer.render((AbstractClientPlayer) event.getPlayer(), 0, event.getPartialRenderTick(), event.getMatrixStack(), event.getBuffers(), event.getLight());
 		}
 	}
 }

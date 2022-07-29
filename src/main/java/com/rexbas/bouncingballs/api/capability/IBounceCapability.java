@@ -2,12 +2,12 @@ package com.rexbas.bouncingballs.api.capability;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.fluid.Fluid;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tags.ITag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 
-public interface IBounceCapability extends ICapabilitySerializable<CompoundNBT> {
+public interface IBounceCapability extends ICapabilitySerializable<CompoundTag> {
 	public void addBounce();
 	public void resetConsecutiveBounces(float fallDistance);
 	public int getConsecutiveBounces();
@@ -19,9 +19,9 @@ public interface IBounceCapability extends ICapabilitySerializable<CompoundNBT> 
 	public int getTicksOnGround();
 	public int getTicksInFluid();
 	public int getTicksSinceLastReset();
-	public void setLastFluid(ITag<Fluid> fluid);
+	public void setLastFluid(Tag<Fluid> fluid);
 	@Nullable
-	public ITag<Fluid> getLastFluid();
+	public Tag<Fluid> getLastFluid();
 	public void setMarkedForUpdate(boolean update);
 	public boolean getMarkedForUpdate();
 }

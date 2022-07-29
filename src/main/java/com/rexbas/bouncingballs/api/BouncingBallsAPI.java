@@ -1,16 +1,13 @@
 package com.rexbas.bouncingballs.api;
 
-import com.rexbas.bouncingballs.api.capability.BounceCapability;
-import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 import com.rexbas.bouncingballs.api.network.BouncingBallsAPINetwork;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -26,9 +23,7 @@ public class BouncingBallsAPI {
 	
     public void setup(final FMLCommonSetupEvent event) {  
     	BouncingBallsAPINetwork.init();
-    	
-    	CapabilityManager.INSTANCE.register(IBounceCapability.class, new BounceCapability.Storage(), BounceCapability::new);
-	}
+    }
     
     @Mod.EventBusSubscriber(modid = BouncingBallsAPI.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class BouncingBallsSounds {

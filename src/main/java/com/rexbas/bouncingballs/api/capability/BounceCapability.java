@@ -4,28 +4,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.fluid.Fluid;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.Capability.IStorage;
-import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 
 public class BounceCapability implements ICapabilityProvider, IBounceCapability {
 	
-	@CapabilityInject(IBounceCapability.class)
-	public static final Capability<IBounceCapability> BOUNCE_CAPABILITY = null;
+	public static final Capability<IBounceCapability> BOUNCE_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
+
 	private final LazyOptional<IBounceCapability> INSTANCE = LazyOptional.of(BounceCapability::new);
 
 	private AtomicInteger consecutiveBounces;
 	private int ticksSinceLastReset;
 	private int ticksOnGround;
 	private int ticksInFluid;
-	private ITag<Fluid> lastFluid;
+	private Tag<Fluid> lastFluid;
 	
 	private boolean markedForUpdate;
 		
@@ -107,7 +106,7 @@ public class BounceCapability implements ICapabilityProvider, IBounceCapability 
 	}
 	
 	@Override
-	public void setLastFluid(ITag<Fluid> fluid) {
+	public void setLastFluid(Tag<Fluid> fluid) {
 		this.lastFluid = fluid;
 	}
 	
@@ -116,7 +115,7 @@ public class BounceCapability implements ICapabilityProvider, IBounceCapability 
 	 */
 	@Override
 	@Nullable
-	public ITag<Fluid> getLastFluid() {
+	public Tag<Fluid> getLastFluid() {
 		return this.lastFluid;
 	}
 	
@@ -131,8 +130,8 @@ public class BounceCapability implements ICapabilityProvider, IBounceCapability 
 	}
 	
 	@Override
-	public CompoundNBT serializeNBT() {
-		CompoundNBT nbt = new CompoundNBT();      
+	public CompoundTag serializeNBT() {
+		CompoundTag nbt = new CompoundTag();      
 		nbt.putInt("consecutiveBounces", this.consecutiveBounces.get());
 		nbt.putInt("ticksSinceLastReset", this.ticksSinceLastReset);
 		nbt.putInt("ticksOnGround", this.ticksOnGround);
@@ -141,7 +140,7 @@ public class BounceCapability implements ICapabilityProvider, IBounceCapability 
 	}
 
 	@Override
-	public void deserializeNBT(CompoundNBT nbt) {
+	public void deserializeNBT(CompoundTag nbt) {
 		this.consecutiveBounces.set(nbt.getInt("consecutiveBounces"));
 		this.ticksSinceLastReset = nbt.getInt("ticksSinceLastReset");
 		this.ticksOnGround = nbt.getInt("ticksOnGround");
@@ -151,20 +150,5 @@ public class BounceCapability implements ICapabilityProvider, IBounceCapability 
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
 		return cap == BOUNCE_CAPABILITY ? INSTANCE.cast() : LazyOptional.empty();
-	}
-	
-	public static class Storage implements IStorage<IBounceCapability> {
-
-		@Override
-		public INBT writeNBT(Capability<IBounceCapability> cap, IBounceCapability instance, Direction side) {
-			return instance.serializeNBT();
-		}
-
-		@Override
-		public void readNBT(Capability<IBounceCapability> cap, IBounceCapability instance, Direction side, INBT nbt) {
-			if (nbt instanceof CompoundNBT) {
-				instance.deserializeNBT((CompoundNBT) nbt);
-			}
-		}
 	}
 }

@@ -5,27 +5,27 @@ import java.util.function.Supplier;
 import com.rexbas.bouncingballs.api.capability.BounceCapability;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 public class SUpdateBounceCapabilityPacket {
 	
-	private CompoundNBT nbt;
+	private CompoundTag nbt;
 	private int entityID;
 	
-	public SUpdateBounceCapabilityPacket(int entityID, CompoundNBT nbt) {
+	public SUpdateBounceCapabilityPacket(int entityID, CompoundTag nbt) {
 		this.entityID = entityID;
 		this.nbt = nbt;
 	}
 	
-	public static void encode(SUpdateBounceCapabilityPacket packet, PacketBuffer buf) {
+	public static void encode(SUpdateBounceCapabilityPacket packet, FriendlyByteBuf buf) {
 		buf.writeInt(packet.entityID);
 		buf.writeNbt(packet.nbt);
 	}
 	
-	public static SUpdateBounceCapabilityPacket decode(PacketBuffer buf) {
+	public static SUpdateBounceCapabilityPacket decode(FriendlyByteBuf buf) {
 		return new SUpdateBounceCapabilityPacket(buf.readInt(), buf.readNbt());
 	}
 	

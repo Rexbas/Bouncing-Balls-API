@@ -7,27 +7,27 @@ import com.rexbas.bouncingballs.api.BouncingBallsAPI.BouncingBallsSounds;
 import com.rexbas.bouncingballs.api.capability.BounceCapability;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.Color;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.tags.Tag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -42,20 +42,20 @@ public class BouncingBall extends Item implements IBouncingBall {
 	}
 
 	@Override
-    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
     	ItemStack stack = player.getItemInHand(hand);
     	
-    	if (hand == Hand.MAIN_HAND && player.getOffhandItem().getItem() instanceof IBouncingBall) {
-    		return new ActionResult<ItemStack>(ActionResultType.FAIL, stack);
+    	if (hand == InteractionHand.MAIN_HAND && player.getOffhandItem().getItem() instanceof IBouncingBall) {
+    		return new InteractionResultHolder<ItemStack>(InteractionResult.FAIL, stack);
     	}
 
     	if (!player.level.isClientSide() && canBounce(player)) {
     		bounce(player, properties.upwardMotion);
     		damageBall(player, stack);
-			playBounceSound(world, player);
-    		return new ActionResult<ItemStack>(ActionResultType.PASS, stack);
+			playBounceSound(level, player);
+    		return new InteractionResultHolder<ItemStack>(InteractionResult.PASS, stack);
     	}
-		return new ActionResult<ItemStack>(ActionResultType.FAIL, stack);
+		return new InteractionResultHolder<ItemStack>(InteractionResult.FAIL, stack);
 	}
 	
 	@Override
@@ -116,10 +116,10 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 */
 	@Override
 	public void bounce(LivingEntity entity, float motionY) {
-		float yaw = entity.yRot;
-		float pitch = entity.xRot;
-		double motionX = (double)(-MathHelper.sin(yaw / 180.0F * (float)Math.PI) * MathHelper.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
-		double motionZ = (double)(MathHelper.cos(yaw / 180.0F * (float)Math.PI) * MathHelper.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
+		float yaw = entity.getYRot();
+		float pitch = entity.getXRot();
+		double motionX = (double)(-Mth.sin(yaw / 180.0F * (float)Math.PI) * Mth.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
+		double motionZ = (double)(Mth.cos(yaw / 180.0F * (float)Math.PI) * Mth.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
 		
 		entity.push(motionX, motionY, motionZ);
 		entity.hurtMarked = true;
@@ -188,7 +188,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 * @param fluid		The fluid.
 	 */
 	@Override
-	public void inFluid(LivingEntity entity, ITag<Fluid> fluid) {
+	public void inFluid(LivingEntity entity, Tag<Fluid> fluid) {
 		if (properties.fluidList.contains(fluid)) {
 			
 			entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
@@ -228,23 +228,23 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 * @param world		The world.
 	 * @param entity	The entity using the ball.
 	 */
-	public void playBounceSound(World world, LivingEntity entity) {
-		float pitch = world.random.nextFloat() * (1.1f - 0.9f) + 0.9f;
-		world.playSound(null, entity, getBounceSound(), SoundCategory.PLAYERS, 1, pitch);
+	public void playBounceSound(Level level, LivingEntity entity) {
+		float pitch = level.random.nextFloat() * (1.1f - 0.9f) + 0.9f;
+		level.playSound(null, entity, getBounceSound(),	SoundSource.PLAYERS, 1, pitch);
 	}
 	
 	@Override
-	public void appendHoverText(ItemStack stack, World world, List<ITextComponent> list, ITooltipFlag flag) {
-		for (ITag<Fluid> fluid : properties.fluidList) {
+	public void appendHoverText(ItemStack stack, Level level, List<Component> list, TooltipFlag flag) {
+		for (Tag<Fluid> fluid : properties.fluidList) {
 			if (fluid == FluidTags.WATER) {
-				list.add(new TranslationTextComponent("bouncingballs_api.hovertext.water_floating").setStyle(Style.EMPTY.withColor(Color.fromRgb(0x0099FF))));
+				list.add(new TranslatableComponent("bouncingballs_api.hovertext.water_floating").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x0099FF))));
 			}
 			else if (fluid == FluidTags.LAVA) {
-				list.add(new TranslationTextComponent("bouncingballs_api.hovertext.lava_floating").setStyle(Style.EMPTY.withColor(Color.fromRgb(0xFF9900))));
+				list.add(new TranslatableComponent("bouncingballs_api.hovertext.lava_floating").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFF9900))));
 			}
 		}
 		if (properties.consumptionItem.getItem() != Items.AIR) {
-			list.add(new TranslationTextComponent("bouncingballs_api.hovertext.consumes").setStyle(Style.EMPTY.withColor(Color.fromRgb(0xAAAAAA)))
+			list.add(new TranslatableComponent("bouncingballs_api.hovertext.consumes").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA)))
 					.append(" ")
 					.append(properties.consumptionItem.getHoverName()));
 		}
@@ -291,7 +291,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 		public boolean mustStartOnGroundOrFluid;
 		public int maxConsecutiveBounces;
 		public ItemStack consumptionItem;
-		public HashSet<ITag<Fluid>> fluidList;
+		public HashSet<Tag<Fluid>> fluidList;
 		public Item recipeItem;
 		
 		public Properties(int durability, Item repairItem, float forwardMotion, float upwardMotion, float rebounceHeight, float damageMultiplier, boolean mustStartOnGroundOrFluid, int maxConsecutiveBounces, Item consumptionItem) {
@@ -304,7 +304,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 			this.mustStartOnGroundOrFluid = mustStartOnGroundOrFluid;
 			this.maxConsecutiveBounces = maxConsecutiveBounces;
 			this.consumptionItem = new ItemStack(consumptionItem);
-			this.fluidList = new HashSet<ITag<Fluid>>();
+			this.fluidList = new HashSet<Tag<Fluid>>();
 			this.recipeItem = Items.AIR;
 		}
 		
@@ -324,7 +324,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 			this(100, Items.SLIME_BALL, 0.5f, 0.65f, 10f, 0.5f, true, 1, Items.AIR);
 		}
 		
-		public Properties addFluid(ITag<Fluid> fluid) {
+		public Properties addFluid(Tag<Fluid> fluid) {
 			this.fluidList.add(fluid);
 			return this;
 		}
