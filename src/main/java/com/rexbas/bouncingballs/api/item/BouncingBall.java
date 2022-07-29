@@ -121,6 +121,10 @@ public class BouncingBall extends Item implements IBouncingBall {
 		double motionX = (double)(-MathHelper.sin(yaw / 180.0F * (float)Math.PI) * MathHelper.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
 		double motionZ = (double)(MathHelper.cos(yaw / 180.0F * (float)Math.PI) * MathHelper.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
 		
+		if (entity.level.containsAnyLiquid(entity.getBoundingBox())) {
+			entity.setDeltaMovement(entity.getDeltaMovement().x(), 0, entity.getDeltaMovement().z());
+		}
+		
 		entity.push(motionX, motionY, motionZ);
 		entity.hurtMarked = true;
 		
