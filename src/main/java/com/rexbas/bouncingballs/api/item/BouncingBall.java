@@ -10,7 +10,6 @@ import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
@@ -240,14 +239,14 @@ public class BouncingBall extends Item implements IBouncingBall {
 	public void appendHoverText(ItemStack stack, Level level, List<Component> list, TooltipFlag flag) {
 		for (TagKey<Fluid> fluid : properties.fluidList) {
 			if (fluid == FluidTags.WATER) {
-				list.add(new TranslatableComponent("bouncingballs_api.hovertext.water_floating").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x0099FF))));
+				list.add(Component.translatable("bouncingballs_api.hovertext.water_floating").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x0099FF))));
 			}
 			else if (fluid == FluidTags.LAVA) {
-				list.add(new TranslatableComponent("bouncingballs_api.hovertext.lava_floating").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFF9900))));
+				list.add(Component.translatable("bouncingballs_api.hovertext.lava_floating").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFF9900))));
 			}
 		}
 		if (properties.consumptionItem.getItem() != Items.AIR) {
-			list.add(new TranslatableComponent("bouncingballs_api.hovertext.consumes").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA)))
+			list.add(Component.translatable("bouncingballs_api.hovertext.consumes").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA)))
 					.append(" ")
 					.append(properties.consumptionItem.getHoverName()));
 		}

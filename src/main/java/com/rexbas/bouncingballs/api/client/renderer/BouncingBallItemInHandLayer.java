@@ -4,9 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import com.rexbas.bouncingballs.api.item.IBouncingBall;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -20,8 +20,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class BouncingBallItemInHandLayer<T extends LivingEntity, M extends EntityModel<T> & ArmedModel> extends ItemInHandLayer<T, M> {
 
-	public BouncingBallItemInHandLayer(RenderLayerParent<T, M> layer) {
-		super(layer);
+	public BouncingBallItemInHandLayer(RenderLayerParent<T, M> layer, ItemInHandRenderer renderer) {
+		super(layer, renderer);
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class BouncingBallItemInHandLayer<T extends LivingEntity, M extends Entit
 			poseStack.mulPose(Vector3f.ZP.rotationDegrees(rotZ));
 
 			boolean flag = side == HumanoidArm.LEFT;
-			Minecraft.getInstance().getItemInHandRenderer().renderItem(entity, stack, transformType, flag, poseStack, buffers, light);
+			this.itemInHandRenderer.renderItem(entity, stack, transformType, flag, poseStack, buffers, light);
 			poseStack.popPose();
 		}
 	}

@@ -2,11 +2,11 @@ package com.rexbas.bouncingballs.api.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HeadedModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -23,8 +23,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class BouncingBallPlayerItemInHandLayer<T extends Player, M extends EntityModel<T> & ArmedModel & HeadedModel> extends BouncingBallItemInHandLayer<T, M> {
 
-	public BouncingBallPlayerItemInHandLayer(RenderLayerParent<T, M> layer) {
-		super(layer);
+	public BouncingBallPlayerItemInHandLayer(RenderLayerParent<T, M> layer, ItemInHandRenderer renderer) {
+		super(layer, renderer);
 	}
 	
 	@Override
@@ -46,7 +46,7 @@ public class BouncingBallPlayerItemInHandLayer<T extends Player, M extends Entit
 		CustomHeadLayer.translateToHead(poseStack, false);
 		boolean flag = side == HumanoidArm.LEFT;
 		poseStack.translate((double) ((flag ? -2.5F : 2.5F) / 16.0F), -0.0625D, 0.0D);
-		Minecraft.getInstance().getItemInHandRenderer().renderItem(entity, stack, ItemTransforms.TransformType.HEAD, false, poseStack, buffers, light);
+		this.itemInHandRenderer.renderItem(entity, stack, ItemTransforms.TransformType.HEAD, false, poseStack, buffers, light);
 		poseStack.popPose();
 	}
 }

@@ -45,14 +45,14 @@ public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & Arme
 	 * @param entity			The entity that is being rendered.
 	 */
 	public SitRenderer(LivingEntityRenderer<T, M> livingRenderer, T entity) {
-		super(new EntityRendererProvider.Context(livingRenderer.entityRenderDispatcher, null, null, null, livingRenderer.font), livingRenderer.getModel(), livingRenderer.shadowRadius);
+		super(new EntityRendererProvider.Context(livingRenderer.entityRenderDispatcher, null, null, null, null, null, livingRenderer.font), livingRenderer.getModel(), livingRenderer.shadowRadius);
 		this.TEXTURE = livingRenderer.getTextureLocation(entity);
 		for (RenderLayer<T, M> layerrenderer : livingRenderer.layers) {
 			if (layerrenderer instanceof PlayerItemInHandLayer) {
 				continue;
 			} else if (layerrenderer instanceof ItemInHandLayer) {
 				// Replace the ItemInHandLayer with the BouncingBallItemInHandLayer
-				this.layers.add(new BouncingBallItemInHandLayer<>(this));
+				this.layers.add(new BouncingBallItemInHandLayer<>(this, ((ItemInHandLayer<T, M>) layerrenderer).itemInHandRenderer));
 			} else {
 				this.layers.add(layerrenderer);
 			}
@@ -143,10 +143,10 @@ public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & Arme
 		poseStack.popPose();
 		
 		// From EntityRenderer
-		net.minecraftforge.client.event.RenderNameplateEvent renderNameplateEvent = new net.minecraftforge.client.event.RenderNameplateEvent(entity, entity.getDisplayName(), this, poseStack, buffers, light, partialRenderTick);
-		net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(renderNameplateEvent);
-		if (renderNameplateEvent.getResult() != net.minecraftforge.eventbus.api.Event.Result.DENY && (renderNameplateEvent.getResult() == net.minecraftforge.eventbus.api.Event.Result.ALLOW || this.shouldShowName(entity))) {
-			this.renderNameTag(entity, renderNameplateEvent.getContent(), poseStack, buffers, light);
+		var renderNameTagEvent = new net.minecraftforge.client.event.RenderNameTagEvent(entity, entity.getDisplayName(), this, poseStack, buffers, light, partialRenderTick);
+		net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(renderNameTagEvent);
+		if (renderNameTagEvent.getResult() != net.minecraftforge.eventbus.api.Event.Result.DENY && (renderNameTagEvent.getResult() == net.minecraftforge.eventbus.api.Event.Result.ALLOW || this.shouldShowName(entity))) {
+			this.renderNameTag(entity, renderNameTagEvent.getContent(), poseStack, buffers, light);
 		}
 		
 		net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.RenderLivingEvent.Post<T, M>(entity, this, partialRenderTick, poseStack, buffers, light));

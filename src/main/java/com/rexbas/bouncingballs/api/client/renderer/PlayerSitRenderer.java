@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -30,10 +29,10 @@ public class PlayerSitRenderer extends SitRenderer<AbstractClientPlayer, PlayerM
 	// Based on PlayerRenderer
 	public PlayerSitRenderer(LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> livingRenderer, AbstractClientPlayer entity) {
 		super(livingRenderer, entity);
-		for (RenderLayer<?, ?> layerrenderer : livingRenderer.layers) {
+		for (RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> layerrenderer : livingRenderer.layers) {
 			if (layerrenderer instanceof PlayerItemInHandLayer) {
 				// Replace the PlayerItemInHandLayer with the BouncingBallPlayerItemInHandLayer
-				this.layers.add(new BouncingBallPlayerItemInHandLayer<>(this));
+				this.layers.add(new BouncingBallPlayerItemInHandLayer<>(this, ((PlayerItemInHandLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>) layerrenderer).itemInHandRenderer));
 			}
 		}
 	}
@@ -89,7 +88,7 @@ public class PlayerSitRenderer extends SitRenderer<AbstractClientPlayer, PlayerM
 			Objective objective = scoreboard.getDisplayObjective(2);
 			if (objective != null) {
 				Score score = scoreboard.getOrCreatePlayerScore(entity.getScoreboardName(), objective);
-				super.renderNameTag(entity, (new TextComponent(Integer.toString(score.getScore()))).append(" ").append(objective.getDisplayName()), poseStack, buffers, light);
+				super.renderNameTag(entity, (Component.literal(Integer.toString(score.getScore()))).append(" ").append(objective.getDisplayName()), poseStack, buffers, light);
 				poseStack.translate(0.0D, (double) (9.0F * 1.15F * 0.025F), 0.0D);
 			}
 		}
