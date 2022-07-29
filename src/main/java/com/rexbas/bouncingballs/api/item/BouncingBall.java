@@ -162,7 +162,6 @@ public class BouncingBall extends Item implements IBouncingBall {
 					bounce(entity, properties.upwardMotion / 2);
 					multiplier = properties.damageMultiplier * 2 > 1 ? 1 : properties.damageMultiplier * 2;
 				}
-				entity.hurtMarked = true;
 		
 				damageBall(entity, stack);
 				playBounceSound(entity.level, entity);
