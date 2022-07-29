@@ -21,27 +21,4 @@ public class BouncingBallsTest {
 	public BouncingBallsTest() {
 		BouncingBallsTestItems.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
 	}
-	
-	@Mod.EventBusSubscriber(modid = BouncingBallsTest.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class Events {
-    	
-    	/*@SubscribeEvent
-		public static void onModelBakeEvent(ModelBakeEvent event) {
-    		BouncingBallsTestItems.ITEMS.getEntries().forEach((ball) -> {
-    			ModelResourceLocation modelLocation = new ModelResourceLocation(ball.get().getRegistryName(), "inventory");
-    			IBakedModel model = event.getModelRegistry().get(modelLocation);
-    			if (model != null && !(model instanceof BouncingBallModel)) {
-    				BouncingBallModel newModel = new BouncingBallModel(model, new BouncingBallItemOverrideList(new ModelResourceLocation(ball.get().getRegistryName() + "_active", "inventory")));
-    				event.getModelRegistry().put(modelLocation, newModel);
-    			}
-    		});
-		}
-    	
-    	@SubscribeEvent
-        public static void onModelRegister(ModelRegistryEvent event) {
-    		BouncingBallsTestItems.ITEMS.getEntries().forEach((ball) -> {
-        		ModelLoader.addSpecialModel(new ModelResourceLocation(ball.get().getRegistryName() + "_active", "inventory"));
-    		});
-        }*/
-	}	
 }

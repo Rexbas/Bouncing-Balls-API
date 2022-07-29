@@ -121,6 +121,10 @@ public class BouncingBall extends Item implements IBouncingBall {
 		double motionX = (double)(-Mth.sin(yaw / 180.0F * (float)Math.PI) * Mth.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
 		double motionZ = (double)(Mth.cos(yaw / 180.0F * (float)Math.PI) * Mth.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
 		
+		if (entity.level.containsAnyLiquid(entity.getBoundingBox())) {
+			entity.setDeltaMovement(entity.getDeltaMovement().x(), 0, entity.getDeltaMovement().z());
+		}
+		
 		entity.push(motionX, motionY, motionZ);
 		entity.hurtMarked = true;
 		
@@ -158,7 +162,6 @@ public class BouncingBall extends Item implements IBouncingBall {
 					bounce(entity, properties.upwardMotion / 2);
 					multiplier = properties.damageMultiplier * 2 > 1 ? 1 : properties.damageMultiplier * 2;
 				}
-				entity.hurtMarked = true;
 		
 				damageBall(entity, stack);
 				playBounceSound(entity.level, entity);
