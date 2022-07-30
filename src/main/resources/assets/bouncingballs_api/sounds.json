@@ -1,9 +1,12 @@
 {
     "bounce": {
-    "category": "neutral",
-    "sounds": [ {
-        "name": "bouncingballs_api:bounce",
-        "stream": false
-        } ]   
+        "category": "neutral",
+        "sounds": [
+            {
+                "name": "bouncingballs_api:bounce",
+                "stream": false,
+                "attenuation_distance": 50
+            }
+        ]
     }
 }
