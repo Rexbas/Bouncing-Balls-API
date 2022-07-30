@@ -32,9 +32,11 @@ public class SUpdateBounceCapabilityPacket {
 	public static void handle(SUpdateBounceCapabilityPacket packet, Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			Entity entity = Minecraft.getInstance().level.getEntity(packet.entityID);
-			entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
-				cap.deserializeNBT(packet.nbt);
-			});
+			if (entity != null) {
+				entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
+					cap.deserializeNBT(packet.nbt);
+				});
+			}
 		});
 		ctx.get().setPacketHandled(true);
 	}
