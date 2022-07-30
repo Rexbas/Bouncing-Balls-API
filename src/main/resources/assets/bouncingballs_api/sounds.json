@@ -5,7 +5,7 @@
             {
                 "name": "bouncingballs_api:bounce",
                 "stream": false,
-                "attenuation_distance": 50
+                "attenuation_distance": 75
             }
         ]
     }
