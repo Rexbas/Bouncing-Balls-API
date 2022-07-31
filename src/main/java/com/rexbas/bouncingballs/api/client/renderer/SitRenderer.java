@@ -3,10 +3,12 @@ package com.rexbas.bouncingballs.api.client.renderer;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.rexbas.bouncingballs.api.item.BouncingBall;
+import com.rexbas.bouncingballs.api.item.IBouncingBall;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.entity.LivingRenderer;
 import net.minecraft.client.renderer.entity.layers.HeldItemLayer;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
@@ -34,10 +36,24 @@ import net.minecraftforge.client.event.RenderLivingEvent;
 public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & IHasArm> extends LivingRenderer<T, M> {
 	
 	private final ResourceLocation TEXTURE;
+	
+	/**
+	 * A new {@link LivingRenderer} that forces the entity in a sitting position.
+	 * Can be used for custom entities. If extended from this class you need to manually replace the HeldItemLayer.
+	 * 
+	 * @param manager		The EntityRendererManager.
+	 * @param model			The entity model.
+	 * @param shadowRadius	The shadow radius.
+	 * @param texture		The texture location.
+	 */
+	public SitRenderer(EntityRendererManager manager, M model, float shadowRadius, ResourceLocation texture) {
+		super(manager, model, shadowRadius);
+		this.TEXTURE = texture;
+	}
 
 	/**
 	 * A new {@link LivingRenderer} that forces the entity in a sitting position.
-	 * Will use the information from the {@link LivingRenderer} like the layers.
+	 * Will use the information from the existing {@link LivingRenderer} like the layers.
 	 * 
 	 * @param livingRenderer	The default renderer.
 	 * @param entity			The entity that is being rendered.
@@ -61,8 +77,16 @@ public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & IHas
 	public void render(T entity, float unknownUnused, float partialRenderTick, MatrixStack matrixStack, IRenderTypeBuffer buffers, int light) {
 		matrixStack.pushPose();		
 		this.getModel().attackTime = this.getAttackAnim(entity, partialRenderTick);
-
-		boolean shouldSit = true;
+		
+		IBouncingBall ball = null;
+		if (entity.getOffhandItem().getItem() instanceof IBouncingBall) {
+			ball = (IBouncingBall) entity.getOffhandItem().getItem();
+		}
+		else if (entity.getMainHandItem().getItem() instanceof IBouncingBall) {
+			ball = (IBouncingBall) entity.getMainHandItem().getItem();
+		}
+		
+		boolean shouldSit = entity.isPassenger() && (entity.getVehicle() != null && entity.getVehicle().shouldRiderSit()) || (ball != null && ball.shouldSitOnBall(entity));
 		this.getModel().riding = shouldSit;
 		this.getModel().young = entity.isBaby();
 		float f = MathHelper.rotLerp(partialRenderTick, entity.yBodyRotO, entity.yBodyRot);
