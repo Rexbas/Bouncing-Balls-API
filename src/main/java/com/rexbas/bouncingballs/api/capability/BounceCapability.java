@@ -31,7 +31,7 @@ public class BounceCapability implements ICapabilityProvider, IBounceCapability 
 		
 	public BounceCapability() {
 		this.consecutiveBounces = new AtomicInteger(0);
-		this.ticksSinceLastReset = 0;
+		this.ticksSinceLastReset = 1200;
 		this.ticksOnGround = 0;
 		this.ticksInFluid = 0;
 		this.lastFluid = null;
