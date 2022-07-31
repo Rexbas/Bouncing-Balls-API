@@ -44,14 +44,14 @@ public class BouncingBallItemInHandLayer<T extends LivingEntity, M extends Entit
 				poseStack.scale(0.5F, 0.5F, 0.5F);
 			}
 			
-			if (ballStack.equals(stackRight) && ((IBouncingBall) ballStack.getItem()).shouldSitOnBall(entity)) {
+			if (ballStack != null && ballStack.equals(stackRight) && ((IBouncingBall) ballStack.getItem()).shouldSitOnBall(entity)) {
 				this.renderBouncingBall(entity, stackRight, ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, HumanoidArm.RIGHT, poseStack, buffers, light);
 			}
 			else {
 				this.renderArmWithItem(entity, stackRight, ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, HumanoidArm.RIGHT, poseStack, buffers, light);
 			}
 			
-			if (ballStack.equals(stackLeft) && ((IBouncingBall) ballStack.getItem()).shouldSitOnBall(entity)) {
+			if (ballStack != null && ballStack.equals(stackLeft) && ((IBouncingBall) ballStack.getItem()).shouldSitOnBall(entity)) {
 				this.renderBouncingBall(entity, stackLeft, ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND, HumanoidArm.LEFT, poseStack, buffers, light);
 			}
 			else {

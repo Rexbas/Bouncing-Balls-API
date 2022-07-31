@@ -3,6 +3,7 @@ package com.rexbas.bouncingballs.api.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.rexbas.bouncingballs.api.item.BouncingBall;
+import com.rexbas.bouncingballs.api.item.IBouncingBall;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ArmedModel;
@@ -36,6 +37,20 @@ import net.minecraftforge.client.event.RenderLivingEvent;
 public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & ArmedModel> extends LivingEntityRenderer<T, M> {
 	
 	private final ResourceLocation TEXTURE;
+	
+	/**
+	 * A new {@link LivingRenderer} that forces the entity in a sitting position.
+	 * Can be used for custom entities. If extended from this class you need to manually replace the HeldItemLayer.
+	 * 
+	 * @param manager		The EntityRendererManager.
+	 * @param model			The entity model.
+	 * @param shadowRadius	The shadow radius.
+	 * @param texture		The texture location.
+	 */
+	public SitRenderer(EntityRendererManager manager, M model, float shadowRadius, ResourceLocation texture) {
+		super(manager, model, shadowRadius);
+		this.TEXTURE = texture;
+	}
 
 	/**
 	 * A new {@link LivingEntityRenderer} that forces the entity in a sitting position.
@@ -64,8 +79,16 @@ public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & Arme
 	public void render(T entity, float unknownUnused, float partialRenderTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
 		poseStack.pushPose();		
 		this.getModel().attackTime = this.getAttackAnim(entity, partialRenderTick);
-
-		boolean shouldSit = true;
+		
+		IBouncingBall ball = null;
+		if (entity.getOffhandItem().getItem() instanceof IBouncingBall) {
+			ball = (IBouncingBall) entity.getOffhandItem().getItem();
+		}
+		else if (entity.getMainHandItem().getItem() instanceof IBouncingBall) {
+			ball = (IBouncingBall) entity.getMainHandItem().getItem();
+		}
+		
+		boolean shouldSit = entity.isPassenger() && (entity.getVehicle() != null && entity.getVehicle().shouldRiderSit()) || (ball != null && ball.shouldSitOnBall(entity));
 		this.getModel().riding = shouldSit;
 		this.getModel().young = entity.isBaby();
 		float f = Mth.rotLerp(partialRenderTick, entity.yBodyRotO, entity.yBodyRot);
