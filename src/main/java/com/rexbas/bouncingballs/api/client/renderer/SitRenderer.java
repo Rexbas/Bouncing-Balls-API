@@ -42,13 +42,13 @@ public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & Arme
 	 * A new {@link LivingRenderer} that forces the entity in a sitting position.
 	 * Can be used for custom entities. If extended from this class you need to manually replace the HeldItemLayer.
 	 * 
-	 * @param manager		The EntityRendererManager.
+	 * @param context		The context.
 	 * @param model			The entity model.
 	 * @param shadowRadius	The shadow radius.
 	 * @param texture		The texture location.
 	 */
-	public SitRenderer(EntityRendererManager manager, M model, float shadowRadius, ResourceLocation texture) {
-		super(manager, model, shadowRadius);
+	public SitRenderer(EntityRendererProvider.Context context, M model, float shadowRadius, ResourceLocation texture) {
+		super(context, model, shadowRadius);
 		this.TEXTURE = texture;
 	}
 
