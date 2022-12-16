@@ -28,6 +28,6 @@ public class BouncingBallsAPI {
     @Mod.EventBusSubscriber(modid = BouncingBallsAPI.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class BouncingBallsSounds {
     	public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, BouncingBallsAPI.MODID);
-    	public static final RegistryObject<SoundEvent> BOUNCE = SOUNDS.register("bounce", () -> new SoundEvent(new ResourceLocation(BouncingBallsAPI.MODID, "bounce")));
+    	public static final RegistryObject<SoundEvent> BOUNCE = SOUNDS.register("bounce", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(BouncingBallsAPI.MODID, "bounce")));
     }
 }

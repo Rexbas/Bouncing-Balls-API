@@ -1,7 +1,7 @@
 package com.rexbas.bouncingballs.api.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import com.rexbas.bouncingballs.api.item.IBouncingBall;
 
 import net.minecraft.client.model.ArmedModel;
@@ -65,8 +65,8 @@ public class BouncingBallItemInHandLayer<T extends LivingEntity, M extends Entit
 		if (!stack.isEmpty()) {
 			poseStack.pushPose();
 			poseStack.scale(2, 2, 2);
-			poseStack.mulPose(Vector3f.XP.rotationDegrees(90.0F));
-			poseStack.mulPose(Vector3f.YP.rotationDegrees(0.0F));
+			poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+			poseStack.mulPose(Axis.YP.rotationDegrees(0.0F));
 			float rotZ = 135;
 			float transX = -0.044f;
 			if (side == HumanoidArm.LEFT) {
@@ -74,7 +74,7 @@ public class BouncingBallItemInHandLayer<T extends LivingEntity, M extends Entit
 				transX *= -1;
 			}
 			poseStack.translate(transX, -0.25, -0.32);
-			poseStack.mulPose(Vector3f.ZP.rotationDegrees(rotZ));
+			poseStack.mulPose(Axis.ZP.rotationDegrees(rotZ));
 
 			boolean flag = side == HumanoidArm.LEFT;
 			this.itemInHandRenderer.renderItem(entity, stack, transformType, flag, poseStack, buffers, light);
