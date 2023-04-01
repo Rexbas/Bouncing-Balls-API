@@ -12,8 +12,8 @@ import net.minecraftforge.network.NetworkEvent;
 
 public class SUpdateBounceCapabilityPacket {
 	
-	private CompoundTag nbt;
-	private int entityID;
+	private final CompoundTag nbt;
+	private final int entityID;
 	
 	public SUpdateBounceCapabilityPacket(int entityID, CompoundTag nbt) {
 		this.entityID = entityID;

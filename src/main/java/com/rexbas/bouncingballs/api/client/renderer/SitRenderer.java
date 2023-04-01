@@ -39,7 +39,7 @@ public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & Arme
 	private final ResourceLocation TEXTURE;
 	
 	/**
-	 * A new {@link LivingRenderer} that forces the entity in a sitting position.
+	 * A new {@link LivingEntityRenderer} that forces the entity in a sitting position.
 	 * Can be used for custom entities. If extended from this class you need to manually replace the HeldItemLayer.
 	 * 
 	 * @param context		The context.
@@ -132,8 +132,8 @@ public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & Arme
 		float f8 = 0.0F;
 		float f5 = 0.0F;
 		if (!shouldSit && entity.isAlive()) {
-			f8 = Mth.lerp(partialRenderTick, entity.animationSpeedOld, entity.animationSpeed);
-			f5 = entity.animationPosition - entity.animationSpeed * (1.0F - partialRenderTick);
+			f8 = entity.walkAnimation.speed(partialRenderTick);
+			f5 = entity.walkAnimation.position(partialRenderTick);
 			if (entity.isBaby()) {
 				f5 *= 3.0F;
 			}

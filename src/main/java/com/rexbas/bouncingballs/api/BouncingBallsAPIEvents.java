@@ -46,7 +46,7 @@ public class BouncingBallsAPIEvents {
 	}
 	
 	/**
-	 * {@link #onLivingUpdate} is the main event that resets the consecutive bounces in water and calls {@link IBouncingBall#inLiquid} for the ball.
+	 * {@link #onLivingUpdate} is the main event that resets the consecutive bounces in water and calls {@link IBouncingBall#inFluid} for the ball.
 	 * When a fall event is not fired this is a backup to reset the consecutive bounces on the ground. For example, when a player is stuck in cobweb.
 	 */
 	@SubscribeEvent
@@ -96,7 +96,7 @@ public class BouncingBallsAPIEvents {
 			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "m_6129_"); // isAffectedByFluids()
 			boolean isAffectedByFluids = (boolean) m.invoke(event.getEntity());
 			if (isAffectedByFluids && !event.getEntity().isSwimming()) {
-			    FluidState fluidstate = event.getEntity().level.getFluidState(new BlockPos(event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ()));
+			    FluidState fluidstate = event.getEntity().level.getFluidState(BlockPos.containing(event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ()));
 			    fluidstate.getTags().forEach((fluid) -> {
 			    	if (event.getEntity().getFluidHeight(fluid) > 0) {
 						ball.inFluid(event.getEntity(), fluid);

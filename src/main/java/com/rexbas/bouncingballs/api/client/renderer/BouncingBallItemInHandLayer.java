@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -45,23 +46,23 @@ public class BouncingBallItemInHandLayer<T extends LivingEntity, M extends Entit
 			}
 			
 			if (ballStack != null && ballStack.equals(stackRight) && ((IBouncingBall) ballStack.getItem()).shouldSitOnBall(entity)) {
-				this.renderBouncingBall(entity, stackRight, ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, HumanoidArm.RIGHT, poseStack, buffers, light);
+				this.renderBouncingBall(entity, stackRight, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, HumanoidArm.RIGHT, poseStack, buffers, light);
 			}
 			else {
-				this.renderArmWithItem(entity, stackRight, ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, HumanoidArm.RIGHT, poseStack, buffers, light);
+				this.renderArmWithItem(entity, stackRight, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, HumanoidArm.RIGHT, poseStack, buffers, light);
 			}
-			
+
 			if (ballStack != null && ballStack.equals(stackLeft) && ((IBouncingBall) ballStack.getItem()).shouldSitOnBall(entity)) {
-				this.renderBouncingBall(entity, stackLeft, ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND, HumanoidArm.LEFT, poseStack, buffers, light);
+				this.renderBouncingBall(entity, stackLeft, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, HumanoidArm.LEFT, poseStack, buffers, light);
 			}
 			else {
-				this.renderArmWithItem(entity, stackLeft, ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND, HumanoidArm.LEFT, poseStack, buffers, light);
+				this.renderArmWithItem(entity, stackLeft, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, HumanoidArm.LEFT, poseStack, buffers, light);
 			}
 			poseStack.popPose();
 		}
 	}
 
-	protected void renderBouncingBall(LivingEntity entity, ItemStack stack, ItemTransforms.TransformType transformType, HumanoidArm side, PoseStack poseStack, MultiBufferSource buffers, int light) {
+	protected void renderBouncingBall(LivingEntity entity, ItemStack stack, ItemDisplayContext displayContext, HumanoidArm side, PoseStack poseStack, MultiBufferSource buffers, int light) {
 		if (!stack.isEmpty()) {
 			poseStack.pushPose();
 			poseStack.scale(2, 2, 2);
@@ -77,7 +78,7 @@ public class BouncingBallItemInHandLayer<T extends LivingEntity, M extends Entit
 			poseStack.mulPose(Axis.ZP.rotationDegrees(rotZ));
 
 			boolean flag = side == HumanoidArm.LEFT;
-			this.itemInHandRenderer.renderItem(entity, stack, transformType, flag, poseStack, buffers, light);
+			this.itemInHandRenderer.renderItem(entity, stack, displayContext, flag, poseStack, buffers, light);
 			poseStack.popPose();
 		}
 	}

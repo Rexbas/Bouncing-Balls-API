@@ -29,9 +29,9 @@ public class BouncingBallsTestItems {
 		event.registerCreativeModeTab(new ResourceLocation(BouncingBallsTest.MODID, "bouncingballs_test_tab"),
 				builder -> builder.title(Component.translatable("item_group." + BouncingBallsTest.MODID))
 						.icon(() -> new ItemStack(BouncingBallsTestItems.NORMAL.get()))
-						.displayItems((enabledFlags, populator, hasPermissions) -> {
-							populator.accept(NORMAL.get());
-							populator.accept(MULTI.get());
+						.displayItems((params, output) -> {
+							output.accept(NORMAL.get());
+							output.accept(MULTI.get());
 						}));
 	}
 }

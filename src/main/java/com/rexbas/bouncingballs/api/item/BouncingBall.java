@@ -227,7 +227,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	/**
 	 * Playing the bounce sound.
 	 * 
-	 * @param world		The world.
+	 * @param level		The world.
 	 * @param entity	The entity using the ball.
 	 */
 	public void playBounceSound(Level level, LivingEntity entity) {
