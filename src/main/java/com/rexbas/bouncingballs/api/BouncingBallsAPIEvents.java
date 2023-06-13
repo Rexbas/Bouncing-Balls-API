@@ -63,14 +63,14 @@ public class BouncingBallsAPIEvents {
 		}
 
 		event.getEntity().getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
-			boolean inFluid = event.getEntity().level.containsAnyLiquid(event.getEntity().getBoundingBox());
+			boolean inFluid = event.getEntity().level().containsAnyLiquid(event.getEntity().getBoundingBox());
 			if (cap.getConsecutiveBounces() > 0) {
 				if ((event.getEntity().fallDistance == 0 && cap.getTicksOnGround() > 3) || cap.getTicksInFluid() > 3) {
 					cap.resetConsecutiveBounces(0);
 				}
 			}
 			
-			if (event.getEntity().isOnGround()) {
+			if (event.getEntity().onGround()) {
 				cap.increaseTicksOnGround();
 			}
 			else {
@@ -85,7 +85,7 @@ public class BouncingBallsAPIEvents {
 			}
 			
 			if (cap.getLastFluid() != null) {
-				if (event.getEntity().isOnGround()) {
+				if (event.getEntity().onGround()) {
 					cap.setLastFluid(null);
 				}
 			}
@@ -96,7 +96,7 @@ public class BouncingBallsAPIEvents {
 			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "m_6129_"); // isAffectedByFluids()
 			boolean isAffectedByFluids = (boolean) m.invoke(event.getEntity());
 			if (isAffectedByFluids && !event.getEntity().isSwimming()) {
-			    FluidState fluidstate = event.getEntity().level.getFluidState(BlockPos.containing(event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ()));
+			    FluidState fluidstate = event.getEntity().level().getFluidState(BlockPos.containing(event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ()));
 			    fluidstate.getTags().forEach((fluid) -> {
 			    	if (event.getEntity().getFluidHeight(fluid) > 0) {
 						ball.inFluid(event.getEntity(), fluid);
@@ -107,7 +107,7 @@ public class BouncingBallsAPIEvents {
 		
 		event.getEntity().getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
 			if (cap.getMarkedForUpdate()) {
-				if (!event.getEntity().level.isClientSide()) {
+				if (!event.getEntity().level().isClientSide()) {
 					BouncingBallsAPINetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> event.getEntity()), new SUpdateBounceCapabilityPacket(event.getEntity().getId(), cap.serializeNBT()));
 				}
 				cap.setMarkedForUpdate(false);

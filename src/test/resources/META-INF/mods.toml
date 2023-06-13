@@ -1,14 +1,12 @@
 modLoader="javafml"
-loaderVersion="[45,)"
+loaderVersion="[46,)"
 license="GNU Lesser General Public License v3.0"
 issueTrackerURL="https://github.com/Rexbas/Bouncing-Balls-API/issues"
 logoFile="logo.png"
 [[mods]]
-modId="bouncingballs_test"
-version="${file.jarVersion}"
-displayName="Bouncing Balls Test"
-displayURL="https://www.curseforge.com/minecraft/mc-mods/bouncing-balls"
+modId="bouncingballs_api_test"
+version="0"
+displayName="Bouncing Balls API Test"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/bouncing-balls-api"
 authors="Rexbas"
-description='''
-A test mod for Bouncing Balls API.
-'''
+description='''A test mod for Bouncing Balls API'''

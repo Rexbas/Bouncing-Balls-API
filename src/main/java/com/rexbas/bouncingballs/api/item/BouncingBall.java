@@ -1,12 +1,8 @@
 package com.rexbas.bouncingballs.api.item;
 
-import java.util.HashSet;
-import java.util.List;
-
 import com.rexbas.bouncingballs.api.BouncingBallsAPI.BouncingBallsSounds;
 import com.rexbas.bouncingballs.api.capability.BounceCapability;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
@@ -28,8 +24,11 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
+
+import java.util.HashSet;
+import java.util.List;
 
 public class BouncingBall extends Item implements IBouncingBall {
 	
@@ -48,7 +47,7 @@ public class BouncingBall extends Item implements IBouncingBall {
     		return new InteractionResultHolder<ItemStack>(InteractionResult.FAIL, stack);
     	}
 
-    	if (!player.level.isClientSide() && canBounce(player)) {
+    	if (!player.level().isClientSide() && canBounce(player)) {
     		bounce(player, properties.upwardMotion);
     		damageBall(player, stack);
 			playBounceSound(level, player);
@@ -73,15 +72,15 @@ public class BouncingBall extends Item implements IBouncingBall {
 		IBounceCapability cap = entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).orElse(null);
 		if (cap != null) {
 			if (properties.mustStartOnGroundOrFluid && cap.getConsecutiveBounces() == 0) {
-				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces && 
-						(cap.getTicksOnGround() > 0 && !entity.level.containsAnyLiquid(entity.getBoundingBox()) ||
+				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces &&
+						(cap.getTicksOnGround() > 0 && !entity.level().containsAnyLiquid(entity.getBoundingBox()) ||
 								(cap.getTicksInFluid() > 0 && cap.getLastFluid() != null &&
 								properties.fluidList.contains(cap.getLastFluid()) &&
 								!entity.isEyeInFluid(cap.getLastFluid()))) &&
 						hasConsumptionItem(entity);
 			}
 			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces &&
-					(!entity.level.containsAnyLiquid(entity.getBoundingBox()) ||
+					(!entity.level().containsAnyLiquid(entity.getBoundingBox()) ||
 							(cap.getLastFluid() != null &&
 							properties.fluidList.contains(cap.getLastFluid()) &&
 							!entity.isEyeInFluid(cap.getLastFluid())))
@@ -100,7 +99,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	public boolean shouldSitOnBall(LivingEntity entity) {
 		IBounceCapability cap = entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).orElse(null);
 		if (cap != null) {
-			return cap.getConsecutiveBounces() > 0 && !entity.isOnGround() ||
+			return cap.getConsecutiveBounces() > 0 && !entity.onGround() ||
 					cap.getTicksSinceLastReset() < 7 || entity.fallDistance > 3 || 
 					(properties.fluidList.contains(cap.getLastFluid()) && !entity.isSwimming());
 		}
@@ -120,7 +119,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 		double motionX = (double)(-Mth.sin(yaw / 180.0F * (float)Math.PI) * Mth.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
 		double motionZ = (double)(Mth.cos(yaw / 180.0F * (float)Math.PI) * Mth.cos(pitch / 180.0F * (float)Math.PI) * properties.forwardMotion);
 		
-		if (entity.level.containsAnyLiquid(entity.getBoundingBox())) {
+		if (entity.level().containsAnyLiquid(entity.getBoundingBox())) {
 			entity.setDeltaMovement(entity.getDeltaMovement().x(), 0, entity.getDeltaMovement().z());
 		}
 		
@@ -132,7 +131,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 		});
 		
 		if (properties.consumptionItem.getItem() != Items.AIR) {
-			entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(itemHandler -> {
+			entity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
 				int slot = findConsumptionItemSlot(itemHandler);
 				if (slot != -1) {
 					itemHandler.extractItem(slot, 1, false);
@@ -151,7 +150,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 */
 	@Override
 	public float onFall(LivingEntity entity, ItemStack stack, float fallDistance) {
-		if (!entity.level.isClientSide()) {
+		if (!entity.level().isClientSide()) {
 			if (fallDistance > properties.rebounceHeight) {
 				float multiplier;
 				if (hasConsumptionItem(entity)) {
@@ -163,7 +162,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 				}
 		
 				damageBall(entity, stack);
-				playBounceSound(entity.level, entity);
+				playBounceSound(entity.level(), entity);
 				return multiplier;
 			}
 		}
@@ -197,7 +196,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 				cap.setLastFluid(fluid);
 			});
 			
-			if (!entity.level.isClientSide()) {
+			if (!entity.level().isClientSide()) {
 				double d = 0.1 * entity.getFluidHeight(fluid) + 0.0175;
 				
 				if (entity.getDeltaMovement().y() < 0 && entity.getFluidHeight(fluid) > 0) {
@@ -265,7 +264,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 			return true;
 		}
 		
-		IItemHandler itemHandler = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).orElse(null);
+		IItemHandler itemHandler = entity.getCapability(ForgeCapabilities.ITEM_HANDLER).orElse(null);
 		if (itemHandler != null) {
 			return findConsumptionItemSlot(itemHandler) != -1;
 		}
@@ -275,7 +274,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 	protected int findConsumptionItemSlot(IItemHandler itemHandler) {
 		for (int i = 0; i < itemHandler.getSlots(); ++i) {
 			ItemStack stack = itemHandler.getStackInSlot(i);
-			if (!stack.isEmpty() && stack.getItem() == properties.consumptionItem.getItem() && ItemStack.tagMatches(stack, properties.consumptionItem)) {
+			if (!stack.isEmpty() && stack.getItem() == properties.consumptionItem.getItem() && ItemStack.isSameItemSameTags(stack, properties.consumptionItem)) {
 				return i;
 			}
 		}

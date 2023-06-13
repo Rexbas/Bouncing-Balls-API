@@ -1,7 +1,6 @@
 package com.rexbas.bouncingballs.api;
 
 import com.rexbas.bouncingballs.api.network.BouncingBallsAPINetwork;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.fml.common.Mod;
