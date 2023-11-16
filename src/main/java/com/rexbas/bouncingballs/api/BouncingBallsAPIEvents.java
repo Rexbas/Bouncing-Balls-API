@@ -1,14 +1,11 @@
 package com.rexbas.bouncingballs.api;
 
-import java.lang.reflect.Method;
-
 import com.rexbas.bouncingballs.api.capability.BounceCapability;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 import com.rexbas.bouncingballs.api.client.renderer.PlayerSitRenderer;
 import com.rexbas.bouncingballs.api.item.IBouncingBall;
 import com.rexbas.bouncingballs.api.network.BouncingBallsAPINetwork;
 import com.rexbas.bouncingballs.api.network.packet.SUpdateBounceCapabilityPacket;
-
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -16,19 +13,21 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
-import net.minecraftforge.event.entity.living.LivingFallEvent;
-import net.minecraftforge.event.entity.player.PlayerFlyableFallEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
+import net.neoforged.neoforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.event.AttachCapabilitiesEvent;
+import net.neoforged.neoforge.event.entity.living.LivingAttackEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent.LivingTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerFlyableFallEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+
+import java.lang.reflect.Method;
 
 @Mod.EventBusSubscriber(modid = BouncingBallsAPI.MODID)
 public class BouncingBallsAPIEvents {
@@ -93,7 +92,7 @@ public class BouncingBallsAPIEvents {
 		});
 		
 		if (ball != null) {
-			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "m_6129_"); // isAffectedByFluids()
+			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "isAffectedByFluids"); // isAffectedByFluids()
 			boolean isAffectedByFluids = (boolean) m.invoke(event.getEntity());
 			if (isAffectedByFluids && !event.getEntity().isSwimming()) {
 			    FluidState fluidstate = event.getEntity().level().getFluidState(BlockPos.containing(event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ()));

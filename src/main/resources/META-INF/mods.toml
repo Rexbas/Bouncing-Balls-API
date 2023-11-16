@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="${forge_version_range}"
+loaderVersion="${loader_version_range}"
 license="${mod_license}"
 issueTrackerURL="https://github.com/Rexbas/Bouncing-Balls-API/issues"
 logoFile="logo.png"
@@ -11,3 +11,15 @@ updateJSONURL="https://forge.curseupdate.com/651871/bouncingballs_api"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/bouncing-balls-api"
 authors="${mod_authors}"
 description='''${mod_description}'''
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    mandatory=true
+    versionRange="${neo_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

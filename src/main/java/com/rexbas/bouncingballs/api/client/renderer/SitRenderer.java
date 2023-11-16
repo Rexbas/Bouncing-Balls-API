@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.rexbas.bouncingballs.api.item.BouncingBall;
 import com.rexbas.bouncingballs.api.item.IBouncingBall;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
@@ -20,9 +19,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RenderLivingEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.RenderLivingEvent;
 
 /**
  * To render an entity in the sitting position with a bouncing ball it is needed to replace the rendering as long as {@link BouncingBall#shouldSitOnBall} returns true.
@@ -166,13 +165,13 @@ public class SitRenderer<T extends LivingEntity, M extends EntityModel<T> & Arme
 		poseStack.popPose();
 		
 		// From EntityRenderer
-		var renderNameTagEvent = new net.minecraftforge.client.event.RenderNameTagEvent(entity, entity.getDisplayName(), this, poseStack, buffers, light, partialRenderTick);
-		net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(renderNameTagEvent);
-		if (renderNameTagEvent.getResult() != net.minecraftforge.eventbus.api.Event.Result.DENY && (renderNameTagEvent.getResult() == net.minecraftforge.eventbus.api.Event.Result.ALLOW || this.shouldShowName(entity))) {
+		var renderNameTagEvent = new net.neoforged.neoforge.client.event.RenderNameTagEvent(entity, entity.getDisplayName(), this, poseStack, buffers, light, partialRenderTick);
+		net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(renderNameTagEvent);
+		if (renderNameTagEvent.getResult() != net.neoforged.bus.api.Event.Result.DENY && (renderNameTagEvent.getResult() == net.neoforged.bus.api.Event.Result.ALLOW || this.shouldShowName(entity))) {
 			this.renderNameTag(entity, renderNameTagEvent.getContent(), poseStack, buffers, light);
 		}
 		
-		net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.RenderLivingEvent.Post<T, M>(entity, this, partialRenderTick, poseStack, buffers, light));
+		net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.client.event.RenderLivingEvent.Post<T, M>(entity, this, partialRenderTick, poseStack, buffers, light));
 	}
 	
 	@Override

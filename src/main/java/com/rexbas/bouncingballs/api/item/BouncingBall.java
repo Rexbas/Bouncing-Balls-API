@@ -1,6 +1,6 @@
 package com.rexbas.bouncingballs.api.item;
 
-import com.rexbas.bouncingballs.api.BouncingBallsAPI.BouncingBallsSounds;
+import com.rexbas.bouncingballs.api.BouncingBallsAPI;
 import com.rexbas.bouncingballs.api.capability.BounceCapability;
 import com.rexbas.bouncingballs.api.capability.IBounceCapability;
 import net.minecraft.network.chat.Component;
@@ -23,9 +23,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.common.NeoForgeMod;
+import net.neoforged.neoforge.common.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 
 import java.util.HashSet;
 import java.util.List;
@@ -131,7 +131,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 		});
 		
 		if (properties.consumptionItem.getItem() != Items.AIR) {
-			entity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
+			entity.getCapability(Capabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
 				int slot = findConsumptionItemSlot(itemHandler);
 				if (slot != -1) {
 					itemHandler.extractItem(slot, 1, false);
@@ -207,7 +207,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 					d *= 1.5;
 				}
 				
-				entity.setDeltaMovement(entity.getDeltaMovement().add(0.0D, entity.getAttribute(ForgeMod.SWIM_SPEED.get()).getValue() * d, 0.0D));
+				entity.setDeltaMovement(entity.getDeltaMovement().add(0.0D, entity.getAttribute(NeoForgeMod.SWIM_SPEED.get()).getValue() * d, 0.0D));
 				entity.hurtMarked = true;
 			}
 		}
@@ -252,7 +252,7 @@ public class BouncingBall extends Item implements IBouncingBall {
     }
 	
 	public SoundEvent getBounceSound() {
-		return BouncingBallsSounds.BOUNCE.get();
+		return BouncingBallsAPI.BouncingBallsSounds.BOUNCE.get();
 	}
 	
 	public Item getRecipeItem() {
@@ -264,7 +264,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 			return true;
 		}
 		
-		IItemHandler itemHandler = entity.getCapability(ForgeCapabilities.ITEM_HANDLER).orElse(null);
+		IItemHandler itemHandler = entity.getCapability(Capabilities.ITEM_HANDLER).orElse(null);
 		if (itemHandler != null) {
 			return findConsumptionItemSlot(itemHandler) != -1;
 		}
@@ -325,12 +325,12 @@ public class BouncingBall extends Item implements IBouncingBall {
 			this(100, Items.SLIME_BALL, 0.5f, 0.65f, 10f, 0.5f, true, 1, Items.AIR);
 		}
 		
-		public Properties addFluid(TagKey<Fluid> fluid) {
+		public com.rexbas.bouncingballs.api.item.BouncingBall.Properties addFluid(TagKey<Fluid> fluid) {
 			this.fluidList.add(fluid);
 			return this;
 		}
 		
-		public Properties recipeItem(Item recipeItem) {
+		public com.rexbas.bouncingballs.api.item.BouncingBall.Properties recipeItem(Item recipeItem) {
 			this.recipeItem = recipeItem;
 			return this;
 		}

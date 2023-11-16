@@ -2,10 +2,9 @@ package com.rexbas.bouncingballs.api.network;
 
 import com.rexbas.bouncingballs.api.BouncingBallsAPI;
 import com.rexbas.bouncingballs.api.network.packet.SUpdateBounceCapabilityPacket;
-
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.neoforged.neoforge.network.NetworkRegistry;
+import net.neoforged.neoforge.network.simple.SimpleChannel;
 
 public class BouncingBallsAPINetwork {
 
@@ -13,9 +12,9 @@ public class BouncingBallsAPINetwork {
 	
 	public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(BouncingBallsAPI.MODID, "network"),
 			() -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
-	
+
 	public static void init() {
 		int ID = 0;
-		CHANNEL.registerMessage(ID++, SUpdateBounceCapabilityPacket.class, SUpdateBounceCapabilityPacket::encode, SUpdateBounceCapabilityPacket::decode, SUpdateBounceCapabilityPacket::handle);
+		CHANNEL.registerMessage(ID++, SUpdateBounceCapabilityPacket.class, SUpdateBounceCapabilityPacket::encoder, SUpdateBounceCapabilityPacket::decoder, SUpdateBounceCapabilityPacket::messageConsumer);
 	}
 }

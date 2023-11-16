@@ -1,11 +1,11 @@
 package com.rexbas.bouncingballs.api.capability;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.neoforged.neoforge.common.capabilities.ICapabilitySerializable;
+
+import javax.annotation.Nullable;
 
 public interface IBounceCapability extends ICapabilitySerializable<CompoundTag> {
 	public void addBounce();

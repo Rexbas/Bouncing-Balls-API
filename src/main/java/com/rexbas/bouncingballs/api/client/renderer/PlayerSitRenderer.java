@@ -2,7 +2,6 @@ package com.rexbas.bouncingballs.api.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -17,11 +16,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class PlayerSitRenderer extends SitRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
@@ -85,7 +85,7 @@ public class PlayerSitRenderer extends SitRenderer<AbstractClientPlayer, PlayerM
 		poseStack.pushPose();
 		if (d0 < 100.0D) {
 			Scoreboard scoreboard = entity.getScoreboard();
-			Objective objective = scoreboard.getDisplayObjective(2);
+			Objective objective = scoreboard.getDisplayObjective(DisplaySlot.BELOW_NAME);
 			if (objective != null) {
 				Score score = scoreboard.getOrCreatePlayerScore(entity.getScoreboardName(), objective);
 				super.renderNameTag(entity, (Component.literal(Integer.toString(score.getScore()))).append(" ").append(objective.getDisplayName()), poseStack, buffers, light);
