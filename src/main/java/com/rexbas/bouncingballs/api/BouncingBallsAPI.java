@@ -1,23 +1,25 @@
 package com.rexbas.bouncingballs.api;
 
 import com.rexbas.bouncingballs.api.network.BouncingBallsAPINetwork;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.registries.RegistryObject;
+
+import java.util.function.Supplier;
 
 @Mod(BouncingBallsAPI.MODID)
 public class BouncingBallsAPI {
 	public static final String MODID = "bouncingballs_api";
 
-	public BouncingBallsAPI() {
+	public BouncingBallsAPI(IEventBus modEventBus) {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
 
-		BouncingBallsSounds.SOUNDS.register(FMLJavaModLoadingContext.get().getModEventBus());
+		BouncingBallsSounds.SOUNDS.register(modEventBus);
 	}
 
 	public void setup(final FMLCommonSetupEvent event) {
@@ -25,7 +27,7 @@ public class BouncingBallsAPI {
 	}
 
 	public static class BouncingBallsSounds {
-		public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, BouncingBallsAPI.MODID);
-		public static final RegistryObject<SoundEvent> BOUNCE = SOUNDS.register("bounce", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(BouncingBallsAPI.MODID, "bounce")));
+		public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, BouncingBallsAPI.MODID);
+		public static final Supplier<SoundEvent> BOUNCE = SOUNDS.register("bounce", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(BouncingBallsAPI.MODID, "bounce")));
 	}
 }

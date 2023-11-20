@@ -207,7 +207,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 					d *= 1.5;
 				}
 				
-				entity.setDeltaMovement(entity.getDeltaMovement().add(0.0D, entity.getAttribute(NeoForgeMod.SWIM_SPEED.get()).getValue() * d, 0.0D));
+				entity.setDeltaMovement(entity.getDeltaMovement().add(0.0D, entity.getAttribute(NeoForgeMod.SWIM_SPEED.value()).getValue() * d, 0.0D));
 				entity.hurtMarked = true;
 			}
 		}
