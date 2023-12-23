@@ -10,7 +10,9 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -18,7 +20,7 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -87,10 +89,11 @@ public class PlayerSitRenderer extends SitRenderer<AbstractClientPlayer, PlayerM
 			Scoreboard scoreboard = entity.getScoreboard();
 			Objective objective = scoreboard.getDisplayObjective(DisplaySlot.BELOW_NAME);
 			if (objective != null) {
-				Score score = scoreboard.getOrCreatePlayerScore(entity.getScoreboardName(), objective);
-				super.renderNameTag(entity, (Component.literal(Integer.toString(score.getScore()))).append(" ").append(objective.getDisplayName()), poseStack, buffers, light);
-				poseStack.translate(0.0D, (double) (9.0F * 1.15F * 0.025F), 0.0D);
-			}
+                ReadOnlyScoreInfo readonlyscoreinfo = scoreboard.getPlayerScoreInfo(entity, objective);
+                Component component = ReadOnlyScoreInfo.safeFormatValue(readonlyscoreinfo, objective.numberFormatOrDefault(StyledFormat.NO_STYLE));
+                super.renderNameTag(entity, Component.empty().append(component).append(CommonComponents.SPACE).append(objective.getDisplayName()), poseStack, buffers, light);
+                poseStack.translate(0.0F, 0.25875F, 0.0F);
+            }
 		}
 
 		super.renderNameTag(entity, textComponent, poseStack, buffers, light);

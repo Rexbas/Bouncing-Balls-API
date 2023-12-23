@@ -1,15 +1,12 @@
 package com.rexbas.bouncingballs.api;
 
-import com.rexbas.bouncingballs.api.capability.BounceCapability;
-import com.rexbas.bouncingballs.api.capability.IBounceCapability;
+import com.rexbas.bouncingballs.api.attachment.BounceData;
 import com.rexbas.bouncingballs.api.client.renderer.PlayerSitRenderer;
 import com.rexbas.bouncingballs.api.item.IBouncingBall;
 import com.rexbas.bouncingballs.api.network.BouncingBallsAPINetwork;
 import com.rexbas.bouncingballs.api.network.packet.SUpdateBounceCapabilityPacket;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.material.FluidState;
@@ -19,8 +16,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
-import net.neoforged.neoforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.event.AttachCapabilitiesEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingAttackEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
@@ -31,19 +27,16 @@ import java.lang.reflect.Method;
 
 @Mod.EventBusSubscriber(modid = BouncingBallsAPI.MODID)
 public class BouncingBallsAPIEvents {
-	
+
 	@SubscribeEvent
-	public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
-		event.register(IBounceCapability.class);
-	}
-	
-	@SubscribeEvent
-	public static void attachtCapability(AttachCapabilitiesEvent<Entity> event) {	
-		if (event.getObject() instanceof Player) {
-			event.addCapability(new ResourceLocation(BouncingBallsAPI.MODID, "capability.bounce"), new BounceCapability());
+	public static void onJoinLevel(EntityJoinLevelEvent event) {
+		if (event.getEntity() instanceof Player player) {
+			// Always create bounce data for players
+			BounceData bounceData = player.getData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA);
+			player.setData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA, bounceData);
 		}
 	}
-	
+
 	/**
 	 * {@link #onLivingUpdate} is the main event that resets the consecutive bounces in water and calls {@link IBouncingBall#inFluid} for the ball.
 	 * When a fall event is not fired this is a backup to reset the consecutive bounces on the ground. For example, when a player is stuck in cobweb.
@@ -61,35 +54,37 @@ public class BouncingBallsAPIEvents {
 			ball = null;
 		}
 
-		event.getEntity().getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
+		if (event.getEntity().hasData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA)) {
+			BounceData bounceData = event.getEntity().getData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA);
 			boolean inFluid = event.getEntity().level().containsAnyLiquid(event.getEntity().getBoundingBox());
-			if (cap.getConsecutiveBounces() > 0) {
-				if ((event.getEntity().fallDistance == 0 && cap.getTicksOnGround() > 3) || cap.getTicksInFluid() > 3) {
-					cap.resetConsecutiveBounces(0);
+			if (bounceData.getConsecutiveBounces() > 0) {
+				if ((event.getEntity().fallDistance == 0 && bounceData.getTicksOnGround() > 3) || bounceData.getTicksInFluid() > 3) {
+					bounceData.resetConsecutiveBounces(0);
 				}
 			}
-			
+
 			if (event.getEntity().onGround()) {
-				cap.increaseTicksOnGround();
+				bounceData.increaseTicksOnGround();
 			}
 			else {
-				cap.resetTicksOnGround();
+				bounceData.resetTicksOnGround();
 			}
-			
+
 			if (inFluid) {
-				cap.increaseTicksInFluid();
+				bounceData.increaseTicksInFluid();
 			}
 			else {
-				cap.resetTicksInFluid();
+				bounceData.resetTicksInFluid();
 			}
-			
-			if (cap.getLastFluid() != null) {
+
+			if (bounceData.getLastFluid() != null) {
 				if (event.getEntity().onGround()) {
-					cap.setLastFluid(null);
+					bounceData.setLastFluid(null);
 				}
 			}
-			cap.increaseTicksSinceLastReset();
-		});
+			bounceData.increaseTicksSinceLastReset();
+			event.getEntity().setData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA, bounceData);
+		}
 		
 		if (ball != null) {
 			Method m = ObfuscationReflectionHelper.findMethod(LivingEntity.class, "isAffectedByFluids"); // isAffectedByFluids()
@@ -103,15 +98,17 @@ public class BouncingBallsAPIEvents {
 			    });
 			}
 		}
-		
-		event.getEntity().getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
-			if (cap.getMarkedForUpdate()) {
+
+		// TODO data attachments may get opt-in syncing
+		if (event.getEntity().hasData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA)) {
+			BounceData bounceData = event.getEntity().getData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA);
+			if (bounceData.getMarkedForUpdate()) {
 				if (!event.getEntity().level().isClientSide()) {
-					BouncingBallsAPINetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> event.getEntity()), new SUpdateBounceCapabilityPacket(event.getEntity().getId(), cap.serializeNBT()));
+					BouncingBallsAPINetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(event::getEntity), new SUpdateBounceCapabilityPacket(event.getEntity().getId(), bounceData.serializeNBT()));
 				}
-				cap.setMarkedForUpdate(false);
+				bounceData.setMarkedForUpdate(false);
 			}
-		});
+		}
 	}
 
 	/**
@@ -119,10 +116,9 @@ public class BouncingBallsAPIEvents {
 	 */
 	@SubscribeEvent
 	public static void onCreativePlayerFall(PlayerFlyableFallEvent event) {
-		event.getEntity().getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
-			cap.resetConsecutiveBounces(event.getDistance());
-		});
-		
+		BounceData bounceData = event.getEntity().getData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA);
+		bounceData.resetConsecutiveBounces(event.getDistance());
+
 		if (event.getEntity().getOffhandItem().getItem() instanceof IBouncingBall) {
 			((IBouncingBall) event.getEntity().getOffhandItem().getItem()).onFall(event.getEntity(), event.getEntity().getOffhandItem(), event.getDistance());
 		}
@@ -136,10 +132,11 @@ public class BouncingBallsAPIEvents {
 	 */
 	@SubscribeEvent
 	public static void onLivingFall(LivingFallEvent event) {
-		event.getEntity().getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
-			cap.resetConsecutiveBounces(event.getDistance());
-		});
-		
+		if (event.getEntity().hasData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA)) {
+			BounceData bounceData = event.getEntity().getData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA);
+			bounceData.resetConsecutiveBounces(event.getDistance());
+		}
+
 		float multiplier = 1;
 		if (event.getEntity().getOffhandItem().getItem() instanceof IBouncingBall) {
 			multiplier = ((IBouncingBall) event.getEntity().getOffhandItem().getItem()).onFall(event.getEntity(), event.getEntity().getOffhandItem(), event.getDistance());

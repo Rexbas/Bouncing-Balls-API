@@ -1,8 +1,7 @@
 package com.rexbas.bouncingballs.api.item;
 
 import com.rexbas.bouncingballs.api.BouncingBallsAPI;
-import com.rexbas.bouncingballs.api.capability.BounceCapability;
-import com.rexbas.bouncingballs.api.capability.IBounceCapability;
+import com.rexbas.bouncingballs.api.attachment.BounceData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
@@ -23,8 +22,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.NeoForgeMod;
-import net.neoforged.neoforge.common.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 
 import java.util.HashSet;
@@ -69,24 +68,21 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 */
 	@Override
 	public boolean canBounce(LivingEntity entity) {
-		IBounceCapability cap = entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).orElse(null);
-		if (cap != null) {
-			if (properties.mustStartOnGroundOrFluid && cap.getConsecutiveBounces() == 0) {
-				return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces &&
-						(cap.getTicksOnGround() > 0 && !entity.level().containsAnyLiquid(entity.getBoundingBox()) ||
-								(cap.getTicksInFluid() > 0 && cap.getLastFluid() != null &&
-								properties.fluidList.contains(cap.getLastFluid()) &&
-								!entity.isEyeInFluid(cap.getLastFluid()))) &&
-						hasConsumptionItem(entity);
-			}
-			return cap.getConsecutiveBounces() < properties.maxConsecutiveBounces &&
-					(!entity.level().containsAnyLiquid(entity.getBoundingBox()) ||
-							(cap.getLastFluid() != null &&
-							properties.fluidList.contains(cap.getLastFluid()) &&
-							!entity.isEyeInFluid(cap.getLastFluid())))
-					&& hasConsumptionItem(entity);
+		BounceData bounceData = entity.getData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA);
+		if (properties.mustStartOnGroundOrFluid && bounceData.getConsecutiveBounces() == 0) {
+			return bounceData.getConsecutiveBounces() < properties.maxConsecutiveBounces &&
+					(bounceData.getTicksOnGround() > 0 && !entity.level().containsAnyLiquid(entity.getBoundingBox()) ||
+							(bounceData.getTicksInFluid() > 0 && bounceData.getLastFluid() != null &&
+									properties.fluidList.contains(bounceData.getLastFluid()) &&
+									!entity.isEyeInFluid(bounceData.getLastFluid()))) &&
+					hasConsumptionItem(entity);
 		}
-		return false;
+		return bounceData.getConsecutiveBounces() < properties.maxConsecutiveBounces &&
+				(!entity.level().containsAnyLiquid(entity.getBoundingBox()) ||
+						(bounceData.getLastFluid() != null &&
+								properties.fluidList.contains(bounceData.getLastFluid()) &&
+								!entity.isEyeInFluid(bounceData.getLastFluid())))
+				&& hasConsumptionItem(entity);
 	}
 	
 	/**
@@ -97,13 +93,10 @@ public class BouncingBall extends Item implements IBouncingBall {
 	 */
 	@Override
 	public boolean shouldSitOnBall(LivingEntity entity) {
-		IBounceCapability cap = entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).orElse(null);
-		if (cap != null) {
-			return cap.getConsecutiveBounces() > 0 && !entity.onGround() ||
-					cap.getTicksSinceLastReset() < 7 || entity.fallDistance > 3 || 
-					(properties.fluidList.contains(cap.getLastFluid()) && !entity.isSwimming());
-		}
-		return false;
+		BounceData bounceData = entity.getData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA);
+		return bounceData.getConsecutiveBounces() > 0 && !entity.onGround() ||
+				bounceData.getTicksSinceLastReset() < 7 || entity.fallDistance > 3 ||
+				(properties.fluidList.contains(bounceData.getLastFluid()) && !entity.isSwimming());
 	}
 
 	/**
@@ -125,18 +118,18 @@ public class BouncingBall extends Item implements IBouncingBall {
 		
 		entity.push(motionX, motionY, motionZ);
 		entity.hurtMarked = true;
-		
-		entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
-			cap.addBounce();
-		});
+
+		BounceData bounceData = entity.getData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA);
+		bounceData.addBounce();
 		
 		if (properties.consumptionItem.getItem() != Items.AIR) {
-			entity.getCapability(Capabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
+			IItemHandler itemHandler = entity.getCapability(Capabilities.ItemHandler.ENTITY);
+			if (itemHandler != null) {
 				int slot = findConsumptionItemSlot(itemHandler);
 				if (slot != -1) {
 					itemHandler.extractItem(slot, 1, false);
 				}
-			});
+			}
 		}
 	}
 	
@@ -191,11 +184,10 @@ public class BouncingBall extends Item implements IBouncingBall {
 	@Override
 	public void inFluid(LivingEntity entity, TagKey<Fluid> fluid) {
 		if (properties.fluidList.contains(fluid)) {
-			
-			entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
-				cap.setLastFluid(fluid);
-			});
-			
+
+			BounceData bounceData = entity.getData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA);
+			bounceData.setLastFluid(fluid);
+
 			if (!entity.level().isClientSide()) {
 				double d = 0.1 * entity.getFluidHeight(fluid) + 0.0175;
 				
@@ -212,7 +204,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 			}
 		}
 	}
-	
+
 	/**
 	 * Damage the ball if applicable.
 	 * 
@@ -264,7 +256,7 @@ public class BouncingBall extends Item implements IBouncingBall {
 			return true;
 		}
 		
-		IItemHandler itemHandler = entity.getCapability(Capabilities.ITEM_HANDLER).orElse(null);
+		IItemHandler itemHandler = entity.getCapability(Capabilities.ItemHandler.ENTITY);
 		if (itemHandler != null) {
 			return findConsumptionItemSlot(itemHandler) != -1;
 		}

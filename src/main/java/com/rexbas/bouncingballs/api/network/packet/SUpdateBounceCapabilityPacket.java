@@ -1,6 +1,7 @@
 package com.rexbas.bouncingballs.api.network.packet;
 
-import com.rexbas.bouncingballs.api.capability.BounceCapability;
+import com.rexbas.bouncingballs.api.BouncingBallsAPI;
+import com.rexbas.bouncingballs.api.attachment.BounceData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -30,9 +31,10 @@ public class SUpdateBounceCapabilityPacket {
 		ctx.enqueueWork(() -> {
 			Entity entity = Minecraft.getInstance().level.getEntity(packet.entityID);
 			if (entity != null) {
-				entity.getCapability(BounceCapability.BOUNCE_CAPABILITY).ifPresent(cap -> {
-					cap.deserializeNBT(packet.nbt);
-				});
+				if (entity.hasData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA)) {
+					BounceData bounceData = entity.getData(BouncingBallsAPI.AttachmentTypes.BOUNCE_DATA);
+					bounceData.deserializeNBT(packet.nbt);
+				}
 			}
 		});
 		ctx.setPacketHandled(true);
